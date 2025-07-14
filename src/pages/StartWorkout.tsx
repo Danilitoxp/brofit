@@ -3,28 +3,62 @@ import { ArrowLeft, Play, Plus, Timer, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useWorkouts } from "@/hooks/useWorkouts";
 
 const StartWorkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { workouts } = useWorkouts();
   const [isActive, setIsActive] = useState(false);
   const [time, setTime] = useState(0);
-  const [exercises] = useState([
-    { id: 1, name: "Supino Reto", sets: 3, reps: 12, weight: 80, completed: false },
-    { id: 2, name: "Supino Inclinado", sets: 3, reps: 10, weight: 70, completed: false },
-    { id: 3, name: "Crucifixo", sets: 3, reps: 12, weight: 15, completed: false },
-    { id: 4, name: "Tríceps Testa", sets: 3, reps: 12, weight: 40, completed: false },
-    { id: 5, name: "Tríceps Corda", sets: 3, reps: 15, weight: 35, completed: false },
-  ]);
+
+  // Buscar o treino - pode vir do state ou buscar o treino de hoje
+  const getWorkout = () => {
+    if (location.state?.workout) {
+      return location.state.workout;
+    }
+    
+    // Se não tem workout no state, buscar treino de hoje
+    const today = new Date().getDay(); // 0 = domingo, 1 = segunda, etc.
+    return workouts.find(w => w.day_of_week === today) || null;
+  };
+
+  const currentWorkout = getWorkout();
+  const exercises = currentWorkout?.exercises || [];
 
   const [exerciseData, setExerciseData] = useState(
-    exercises.reduce((acc, ex) => ({
+    exercises.reduce((acc, ex, index) => ({
       ...acc,
-      [ex.id]: { weight: ex.weight, reps: ex.reps, completed: ex.completed }
+      [index]: { weight: ex.weight || 0, reps: ex.reps, completed: false }
     }), {})
   );
+
+  // Atualizar exerciseData quando os exercícios mudarem
+  useEffect(() => {
+    if (exercises.length > 0) {
+      setExerciseData(
+        exercises.reduce((acc, ex, index) => ({
+          ...acc,
+          [index]: { weight: ex.weight || 0, reps: ex.reps, completed: false }
+        }), {})
+      );
+    }
+  }, [exercises]);
+
+  // Redirecionar se não há treino
+  useEffect(() => {
+    if (!currentWorkout || exercises.length === 0) {
+      toast({
+        title: "Nenhum treino encontrado",
+        description: "Crie um treino primeiro para começar.",
+        variant: "destructive"
+      });
+      navigate('/workouts');
+    }
+  }, [currentWorkout, exercises, navigate, toast]);
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -92,7 +126,7 @@ const StartWorkout = () => {
           <ArrowLeft size={20} />
         </Button>
         <div className="text-center">
-          <h1 className="text-xl font-bold">Peito & Tríceps</h1>
+          <h1 className="text-xl font-bold">{currentWorkout?.name || "Treino"}</h1>
           <p className="text-sm text-muted-foreground">
             {completedCount}/{exercises.length} concluídos
           </p>
@@ -132,11 +166,11 @@ const StartWorkout = () => {
 
       {/* Exercise List */}
       <div className="space-y-4">
-        {exercises.map((exercise) => (
+        {exercises.map((exercise, index) => (
           <Card 
-            key={exercise.id}
+            key={index}
             className={`floating-card p-4 transition-all duration-300 ${
-              exerciseData[exercise.id]?.completed 
+              exerciseData[index]?.completed 
                 ? 'bg-secondary/10 border-secondary/30' 
                 : 'hover:scale-[1.02]'
             }`}
@@ -146,20 +180,20 @@ const StartWorkout = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => toggleExercise(exercise.id)}
+                  onClick={() => toggleExercise(index)}
                   className={`w-6 h-6 rounded-full border-2 ${
-                    exerciseData[exercise.id]?.completed
+                    exerciseData[index]?.completed
                       ? 'bg-secondary border-secondary text-secondary-foreground'
                       : 'border-muted-foreground'
                   }`}
                 >
-                  {exerciseData[exercise.id]?.completed && <Check size={12} />}
+                  {exerciseData[index]?.completed && <Check size={12} />}
                 </Button>
                 <div>
                   <h3 className={`font-semibold ${
-                    exerciseData[exercise.id]?.completed ? 'line-through text-muted-foreground' : ''
+                    exerciseData[index]?.completed ? 'line-through text-muted-foreground' : ''
                   }`}>
-                    {exercise.name}
+                    {exercise.exercise_name}
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     {exercise.sets} séries
@@ -173,8 +207,8 @@ const StartWorkout = () => {
                 <label className="text-xs text-muted-foreground">Peso (kg)</label>
                 <Input
                   type="number"
-                  value={exerciseData[exercise.id]?.weight || ''}
-                  onChange={(e) => updateWeight(exercise.id, e.target.value)}
+                  value={exerciseData[index]?.weight || ''}
+                  onChange={(e) => updateWeight(index, e.target.value)}
                   className="mt-1"
                   placeholder="0"
                 />
@@ -183,8 +217,8 @@ const StartWorkout = () => {
                 <label className="text-xs text-muted-foreground">Repetições</label>
                 <Input
                   type="number"
-                  value={exerciseData[exercise.id]?.reps || ''}
-                  onChange={(e) => updateReps(exercise.id, e.target.value)}
+                  value={exerciseData[index]?.reps || ''}
+                  onChange={(e) => updateReps(index, e.target.value)}
                   className="mt-1"
                   placeholder="0"
                 />

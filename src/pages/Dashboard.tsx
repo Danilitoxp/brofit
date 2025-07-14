@@ -122,7 +122,14 @@ const Dashboard = () => {
           variant="glass" 
           size="lg" 
           className="w-full text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/10"
-          onClick={() => todayWorkout.exercises > 0 ? navigate('/start-workout') : navigate('/workouts')}
+          onClick={() => {
+            if (todayWorkout.exercises > 0) {
+              const workout = workouts.find(w => w.day_of_week === currentDate.getDay());
+              navigate('/start-workout', { state: { workout } });
+            } else {
+              navigate('/workouts');
+            }
+          }}
           disabled={todayWorkout.exercises === 0}
         >
           {todayWorkout.exercises > 0 ? 
