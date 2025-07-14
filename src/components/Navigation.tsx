@@ -20,7 +20,8 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border pb-safe"
+         style={{ paddingBottom: `max(env(safe-area-inset-bottom), 0.5rem)` }}>
       <div className="flex items-center justify-around px-1 py-2 max-w-screen-sm mx-auto">
         {navItems.map((item) => (
           <NavLink
