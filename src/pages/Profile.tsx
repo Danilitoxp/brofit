@@ -117,7 +117,8 @@ const Profile = () => {
                     <h2 className="text-3xl font-bold mb-2">
                       {profile?.display_name || "Usuário"}
                     </h2>
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex flex-col items-center gap-2 mb-3 md:flex-row md:items-center md:justify-center">
+
                       <Badge variant={profile?.is_public ? "default" : "secondary"}>
                         {profile?.is_public ? <><Eye size={12} className="mr-1" /> Público</> : <><EyeOff size={12} className="mr-1" /> Privado</>}
                       </Badge>
