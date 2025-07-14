@@ -211,3 +211,89 @@
     @apply bg-gradient-secondary glow-secondary;
   }
 }
+
+/* PWA específico - Melhorias para mobile */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Garantir que cards não sejam muito pequenos em mobile */
+  .floating-card {
+    min-height: 44px; /* Área de toque mínima recomendada */
+  }
+  
+  /* Melhorar espaçamento em telas menores */
+  .space-y-6 > * + * {
+    margin-top: 1rem;
+  }
+  
+  /* Ajustar texto para mobile */
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Otimizações para PWA standalone */
+@media (display-mode: standalone) {
+  body {
+    /* Evitar zoom acidental em inputs */
+    touch-action: manipulation;
+  }
+  
+  /* Adicionar padding no topo para evitar notch/status bar */
+  .min-h-screen {
+    min-height: 100dvh; /* Dynamic viewport height */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Prevenção de zoom em inputs em iOS */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/* Melhorias para toque */
+button,
+[role="button"],
+.cursor-pointer {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Animações suaves para PWA */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Otimização para instalação */
+.install-prompt {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Garantir que dropdown/modals funcionem bem em mobile */
+.fixed {
+  position: fixed !important;
+}
+
+/* Safe area para notch */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

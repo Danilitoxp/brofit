@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
+import { InstallPrompt } from "./components/InstallPrompt";
 import Dashboard from "./pages/Dashboard";
 import Workouts from "./pages/Workouts";
 import StartWorkout from "./pages/StartWorkout";
@@ -52,6 +53,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <InstallPrompt />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

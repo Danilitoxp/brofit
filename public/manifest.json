@@ -1,0 +1,53 @@
+{
+  "name": "BroFit - Unleashed Progress",
+  "short_name": "BroFit",
+  "description": "Aplicativo completo para acompanhar treinos, progressos e conectar com amigos fitness",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f23",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    {
+      "src": "/src/assets/brofit-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/src/assets/brofit-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Novo Treino",
+      "short_name": "Treino",
+      "description": "Iniciar um novo treino rapidamente",
+      "url": "/quick-workout",
+      "icons": [
+        {
+          "src": "/src/assets/brofit-logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Progresso",
+      "short_name": "Progresso",
+      "description": "Ver estatísticas de progresso",
+      "url": "/progress",
+      "icons": [
+        {
+          "src": "/src/assets/brofit-logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
