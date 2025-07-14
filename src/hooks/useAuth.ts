@@ -1,108 +1,83 @@
-import { useState, useEffect, createContext, useContext } from "react";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  level: number;
-  xp: number;
-  streak: number;
-}
+import { useState, useEffect, createContext, useContext } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  session: Session | null;
   loading: boolean;
+  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signOut: () => Promise<{ error: any }>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
 
-// Mock user data for demonstration
-const mockUser: User = {
-  id: "1",
-  name: "Bro Fitness",
-  email: "bro@brofit.com",
-  avatar: "💪",
-  level: 15,
-  xp: 2450,
-  streak: 12
-};
-
 export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in (in a real app, this would check localStorage/cookies)
-    const savedUser = localStorage.getItem("brofit_user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    setLoading(true);
+  const signUp = async (email: string, password: string) => {
+    const redirectUrl = `${window.location.origin}/`;
     
-    // Mock login delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In a real app, this would make an API call
-    if (email && password) {
-      const loggedInUser = { ...mockUser, email };
-      setUser(loggedInUser);
-      localStorage.setItem("brofit_user", JSON.stringify(loggedInUser));
-    }
-    
-    setLoading(false);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+    return { error };
   };
 
-  const signup = async (name: string, email: string, password: string) => {
-    setLoading(true);
-    
-    // Mock signup delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In a real app, this would make an API call
-    if (name && email && password) {
-      const newUser = { 
-        ...mockUser, 
-        name, 
-        email, 
-        level: 1, 
-        xp: 0, 
-        streak: 0 
-      };
-      setUser(newUser);
-      localStorage.setItem("brofit_user", JSON.stringify(newUser));
-    }
-    
-    setLoading(false);
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    return { error };
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("brofit_user");
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    return { error };
   };
 
   return {
     user,
-    isAuthenticated: !!user,
-    login,
-    signup,
-    logout,
-    loading
+    session,
+    loading,
+    signUp,
+    signIn,
+    signOut
   };
 };

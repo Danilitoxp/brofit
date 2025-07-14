@@ -1,8 +1,16 @@
-import { Home, Dumbbell, Trophy, User, Users } from "lucide-react";
+import { Home, Dumbbell, Trophy, User, Users, LogOut } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
+  const { signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+  };
+
   const navItems = [
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/workouts", icon: Dumbbell, label: "Treinos" },
@@ -40,6 +48,17 @@ const Navigation = () => {
             )}
           </NavLink>
         ))}
+        
+        {/* Logout Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleLogout}
+          className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-300 text-muted-foreground hover:text-destructive"
+        >
+          <LogOut size={20} />
+          <span className="text-xs font-medium">Sair</span>
+        </Button>
       </div>
     </nav>
   );
