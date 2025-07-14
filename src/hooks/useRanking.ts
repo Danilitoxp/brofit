@@ -61,26 +61,40 @@ export const useRanking = () => {
           user_id,
           max_weight,
           max_reps,
-          achieved_at,
-          profiles!inner(display_name, avatar_url, is_public)
+          achieved_at
         `)
         .eq('exercise_name', exerciseName)
-        .eq('profiles.is_public', true)
         .order('max_weight', { ascending: false })
         .order('max_reps', { ascending: false })
         .limit(limit);
 
       if (error) throw error;
 
-      return data?.map((record: any, index) => ({
-        user_id: record.user_id,
-        display_name: record.profiles.display_name,
-        avatar_url: record.profiles.avatar_url,
-        max_weight: record.max_weight,
-        max_reps: record.max_reps,
-        achieved_at: record.achieved_at,
-        rank: index + 1
-      })) || [];
+      // Get user profiles for the results
+      const userIds = data?.map(record => record.user_id) || [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, is_public')
+        .in('user_id', userIds)
+        .eq('is_public', true);
+
+      // Filter records to only include public profiles
+      const publicData = data?.filter(record => 
+        profiles?.some(profile => profile.user_id === record.user_id)
+      ) || [];
+
+      return publicData?.map((record: any, index) => {
+        const profile = profiles?.find(p => p.user_id === record.user_id);
+        return {
+          user_id: record.user_id,
+          display_name: profile?.display_name || 'Usuário',
+          avatar_url: profile?.avatar_url,
+          max_weight: record.max_weight,
+          max_reps: record.max_reps,
+          achieved_at: record.achieved_at,
+          rank: index + 1
+        };
+      }) || [];
     } catch (error) {
       console.error('Erro ao buscar ranking:', error);
       toast({
@@ -100,20 +114,32 @@ export const useRanking = () => {
         .from('exercise_records')
         .select(`
           user_id,
-          max_weight,
-          profiles!inner(display_name, avatar_url, is_public)
-        `)
-        .eq('profiles.is_public', true);
+          max_weight
+        `);
 
       if (error) throw error;
 
+      // Get user profiles for the results
+      const userIds = [...new Set(data?.map(record => record.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, is_public')
+        .in('user_id', userIds)
+        .eq('is_public', true);
+
+      // Filter records to only include public profiles
+      const publicData = data?.filter(record => 
+        profiles?.some(profile => profile.user_id === record.user_id)
+      ) || [];
+
       // Agrupar por usuário e somar pesos
-      const userTotals = data?.reduce((acc: any, record: any) => {
+      const userTotals = publicData?.reduce((acc: any, record: any) => {
+        const profile = profiles?.find(p => p.user_id === record.user_id);
         if (!acc[record.user_id]) {
           acc[record.user_id] = {
             user_id: record.user_id,
-            display_name: record.profiles.display_name,
-            avatar_url: record.profiles.avatar_url,
+            display_name: profile?.display_name || 'Usuário',
+            avatar_url: profile?.avatar_url,
             total_weight: 0
           };
         }
@@ -158,8 +184,7 @@ export const useRanking = () => {
           exercise_name,
           max_weight,
           max_reps,
-          achieved_at,
-          profiles!inner(display_name, avatar_url)
+          achieved_at
         `);
 
       // Adicionar filtro por exercício se especificado
@@ -184,25 +209,36 @@ export const useRanking = () => {
 
       if (error) throw error;
 
+      // Get user profiles for the results
+      const userIds = [...new Set(data?.map(record => record.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds);
+
       if (exerciseName) {
         // Ranking por exercício específico
-        return data?.map((record: any, index) => ({
-          user_id: record.user_id,
-          display_name: record.profiles.display_name,
-          avatar_url: record.profiles.avatar_url,
-          max_weight: record.max_weight,
-          max_reps: record.max_reps,
-          achieved_at: record.achieved_at,
-          rank: index + 1
-        })).sort((a, b) => b.max_weight - a.max_weight) || [];
+        return data?.map((record: any, index) => {
+          const profile = profiles?.find(p => p.user_id === record.user_id);
+          return {
+            user_id: record.user_id,
+            display_name: profile?.display_name || 'Usuário',
+            avatar_url: profile?.avatar_url,
+            max_weight: record.max_weight,
+            max_reps: record.max_reps,
+            achieved_at: record.achieved_at,
+            rank: index + 1
+          };
+        }).sort((a, b) => b.max_weight - a.max_weight) || [];
       } else {
         // Ranking geral dos amigos
         const userTotals = data?.reduce((acc: any, record: any) => {
+          const profile = profiles?.find(p => p.user_id === record.user_id);
           if (!acc[record.user_id]) {
             acc[record.user_id] = {
               user_id: record.user_id,
-              display_name: record.profiles.display_name,
-              avatar_url: record.profiles.avatar_url,
+              display_name: profile?.display_name || 'Usuário',
+              avatar_url: profile?.avatar_url,
               total_weight: 0
             };
           }

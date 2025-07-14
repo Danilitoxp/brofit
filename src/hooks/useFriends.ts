@@ -54,27 +54,35 @@ export const useFriends = () => {
           requester_id,
           addressee_id,
           status,
-          created_at,
-          requester:profiles!friendships_requester_id_fkey(user_id, display_name, avatar_url, bio, experience_level),
-          addressee:profiles!friendships_addressee_id_fkey(user_id, display_name, avatar_url, bio, experience_level)
+          created_at
         `)
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
+      // Get all unique user IDs from friendships
+      const allUserIds = [...new Set(friendshipsData?.flatMap(f => [f.requester_id, f.addressee_id]).filter(id => id !== user.id) || [])];
+      
+      // Get profiles for all users
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, bio, experience_level')
+        .in('user_id', allUserIds);
+
       const friendsList: Friend[] = [];
       const requestsList: FriendRequest[] = [];
 
       friendshipsData?.forEach((friendship: any) => {
         const isRequester = friendship.requester_id === user.id;
-        const friendProfile = isRequester ? friendship.addressee : friendship.requester;
+        const friendUserId = isRequester ? friendship.addressee_id : friendship.requester_id;
+        const friendProfile = profiles?.find(p => p.user_id === friendUserId);
 
-        if (friendship.status === 'accepted') {
+        if (friendship.status === 'accepted' && friendProfile) {
           friendsList.push({
             id: friendProfile.user_id,
             user_id: friendProfile.user_id,
-            display_name: friendProfile.display_name,
+            display_name: friendProfile.display_name || 'Usuário',
             avatar_url: friendProfile.avatar_url,
             bio: friendProfile.bio,
             experience_level: friendProfile.experience_level,
@@ -83,13 +91,13 @@ export const useFriends = () => {
             is_requester: isRequester,
             created_at: friendship.created_at
           });
-        } else if (friendship.status === 'pending' && !isRequester) {
+        } else if (friendship.status === 'pending' && !isRequester && friendProfile) {
           // Solicitações recebidas
           requestsList.push({
             id: friendship.id,
-            requester_id: friendship.requester.user_id,
-            requester_name: friendship.requester.display_name,
-            requester_avatar: friendship.requester.avatar_url,
+            requester_id: friendProfile.user_id,
+            requester_name: friendProfile.display_name || 'Usuário',
+            requester_avatar: friendProfile.avatar_url,
             created_at: friendship.created_at
           });
         }
@@ -129,8 +137,7 @@ export const useFriends = () => {
       const { data: friendshipsData } = await supabase
         .from('friendships')
         .select('requester_id, addressee_id, status')
-        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
-        .in(userIds.length > 0 ? 'requester_id' : 'addressee_id', userIds);
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
       return usersData?.map(userData => {
         const friendship = friendshipsData?.find(f => 
