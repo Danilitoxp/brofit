@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          birth_date: string | null
+          created_at: string
+          display_name: string | null
+          experience_level: string | null
+          fitness_goal: string | null
+          height: number | null
+          id: string
+          is_public: boolean | null
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          birth_date?: string | null
+          created_at?: string
+          display_name?: string | null
+          experience_level?: string | null
+          fitness_goal?: string | null
+          height?: number | null
+          id?: string
+          is_public?: boolean | null
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          birth_date?: string | null
+          created_at?: string
+          display_name?: string | null
+          experience_level?: string | null
+          fitness_goal?: string | null
+          height?: number | null
+          id?: string
+          is_public?: boolean | null
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
       workout_exercises: {
         Row: {
           created_at: string
@@ -57,6 +105,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      workout_stats: {
+        Row: {
+          created_at: string
+          current_streak: number | null
+          id: string
+          last_workout_date: string | null
+          longest_streak: number | null
+          total_exercises: number | null
+          total_weight_lifted: number | null
+          total_workouts: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          last_workout_date?: string | null
+          longest_streak?: number | null
+          total_exercises?: number | null
+          total_weight_lifted?: number | null
+          total_workouts?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          last_workout_date?: string | null
+          longest_streak?: number | null
+          total_exercises?: number | null
+          total_weight_lifted?: number | null
+          total_workouts?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       workouts: {
         Row: {
