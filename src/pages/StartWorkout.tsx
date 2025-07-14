@@ -81,7 +81,7 @@ const StartWorkout = () => {
     });
     
     // Aqui você pode salvar o treino no banco de dados
-    navigate('/dashboard');
+    navigate('/');
   };
 
   return (
