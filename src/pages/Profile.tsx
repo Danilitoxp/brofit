@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Edit, Settings, Trophy, Target, Calendar, Scale, Ruler, User, Lock, Eye, EyeOff } from "lucide-react";
+import { Edit, Settings, Trophy, Target, Calendar, Scale, Ruler, User, Lock, Eye, EyeOff, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,12 +10,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { ProfileForm } from "@/components/ProfileForm";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const { user } = useAuth();
   const { profile, stats, loading, updateProfile, uploadAvatar, calculateAge, calculateBMI } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (updates: any) => {
     setIsSubmitting(true);
@@ -113,41 +115,90 @@ const Profile = () => {
                 </Avatar>
 
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold">
+                  {/* Nome Principal */}
+                  <div className="mb-4">
+                    <h2 className="text-3xl font-bold mb-2">
                       {profile?.display_name || "Usuário"}
                     </h2>
-                    <Badge variant={profile?.is_public ? "default" : "secondary"}>
-                      {profile?.is_public ? (
-                        <><Eye size={12} className="mr-1" /> Público</>
-                      ) : (
-                        <><EyeOff size={12} className="mr-1" /> Privado</>
+                    <div className="flex items-center gap-3 mb-3">
+                      <Badge variant={profile?.is_public ? "default" : "secondary"}>
+                        {profile?.is_public ? (
+                          <><Eye size={12} className="mr-1" /> Público</>
+                        ) : (
+                          <><EyeOff size={12} className="mr-1" /> Privado</>
+                        )}
+                      </Badge>
+                      {profile?.experience_level && (
+                        <Badge variant="outline">
+                          {getExperienceLabel(profile.experience_level)}
+                        </Badge>
                       )}
-                    </Badge>
+                    </div>
                   </div>
-                  
-                  <p className="text-muted-foreground mb-3 break-all text-sm">{user?.email}</p>
-                  
-                  {profile?.experience_level && (
-                    <Badge variant="outline" className="mb-3">
-                      {getExperienceLabel(profile.experience_level)}
-                    </Badge>
-                  )}
+
+                  {/* ID para Amigos */}
+                  <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-sm text-primary mb-1">
+                          🆔 ID para Amigos
+                        </h3>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Compartilhe este ID para que amigos possam te encontrar
+                        </p>
+                        <code className="bg-muted px-2 py-1 rounded text-sm font-mono">
+                          {user?.id?.slice(0, 8)}...{user?.id?.slice(-4)}
+                        </code>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(user?.id || '');
+                          toast({
+                            title: "ID copiado!",
+                            description: "O ID foi copiado para a área de transferência."
+                          });
+                        }}
+                      >
+                        Copiar
+                      </Button>
+                    </div>
+                  </div>
 
                   {profile?.bio && (
-                    <p className="text-sm">{profile.bio}</p>
+                    <p className="text-sm text-muted-foreground">{profile.bio}</p>
                   )}
                 </div>
               </div>
             </Card>
 
-            {/* Informações Físicas */}
+            {/* Informações Pessoais e de Contato */}
             <Card className="floating-card p-6">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <User size={20} className="mr-2" />
-                Informações Físicas
+                Informações Pessoais
               </h3>
 
+              {/* Informações de Contato */}
+              <div className="mb-6">
+                <h4 className="font-medium mb-3 text-muted-foreground text-sm uppercase tracking-wide">
+                  Contato
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <span className="text-primary text-xs">@</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Email</p>
+                      <p className="text-xs text-muted-foreground break-all">{user?.email}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dados Físicos */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {age && (
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
@@ -183,7 +234,7 @@ const Profile = () => {
               </div>
 
               {profile?.fitness_goal && (
-                <div className="mt-4 p-4 bg-primary/10 rounded-lg">
+                <div className="mt-6 p-4 bg-primary/10 rounded-lg">
                   <h4 className="font-semibold mb-2 flex items-center">
                     <Target size={16} className="mr-2" />
                     Objetivo Principal
