@@ -110,16 +110,16 @@ export const useProfile = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          ...updates
-        });
+        .update(updates)
+        .eq('user_id', user.id)
+        .select()
+        .single();
 
       if (error) throw error;
 
-      await fetchProfile();
+      setProfile(data as Profile);
       toast({
         title: "Sucesso",
         description: "Perfil atualizado com sucesso!"

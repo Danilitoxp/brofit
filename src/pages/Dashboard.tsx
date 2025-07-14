@@ -2,23 +2,38 @@ import { useState, useEffect } from "react";
 import { Calendar, Flame, TrendingUp, Target, Clock, Dumbbell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useWorkouts } from "@/hooks/useWorkouts";
+import { useProfile } from "@/hooks/useProfile";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { workouts } = useWorkouts();
+  const { stats } = useProfile();
   const [currentDate] = useState(new Date());
-  const [todayWorkout] = useState({
-    name: "Peito & Tríceps",
-    exercises: 6,
-    estimatedTime: 75,
-    completed: false,
-  });
 
-  const [weeklyStats] = useState({
-    workoutsCompleted: 4,
-    totalWorkouts: 6,
-    streak: 12,
-    personalRecords: 3,
-  });
+  // Determinar treino de hoje baseado no dia da semana
+  const getTodayWorkout = () => {
+    const today = currentDate.getDay(); // 0 = domingo, 1 = segunda, etc.
+    const todayWorkout = workouts.find(w => w.day_of_week === today);
+    
+    if (todayWorkout) {
+      return {
+        name: todayWorkout.name,
+        exercises: todayWorkout.exercises.length,
+        estimatedTime: todayWorkout.exercises.length * 12, // ~12min por exercício
+        completed: false
+      };
+    }
+    
+    return {
+      name: "Nenhum treino programado",
+      exercises: 0,
+      estimatedTime: 0,
+      completed: false
+    };
+  };
+
+  const todayWorkout = getTodayWorkout();
 
   const getWelcomeMessage = () => {
     const hour = currentDate.getHours();
@@ -54,7 +69,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2 floating-card p-3">
               <Flame className="text-accent" size={20} />
-              <span className="font-bold text-lg">{weeklyStats.streak}</span>
+              <span className="font-bold text-lg">{stats?.current_streak || 0}</span>
             </div>
             <Button 
               variant="ghost" 
@@ -107,9 +122,13 @@ const Dashboard = () => {
           variant="glass" 
           size="lg" 
           className="w-full text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/10"
-          onClick={() => navigate('/start-workout')}
+          onClick={() => todayWorkout.exercises > 0 ? navigate('/start-workout') : navigate('/workouts')}
+          disabled={todayWorkout.exercises === 0}
         >
-          {todayWorkout.completed ? "✅ Treino Concluído" : "🔥 Iniciar Treino"}
+          {todayWorkout.exercises > 0 ? 
+            (todayWorkout.completed ? "✅ Treino Concluído" : "🔥 Iniciar Treino") :
+            "📝 Criar Treino"
+          }
         </Button>
       </div>
 
@@ -120,9 +139,9 @@ const Dashboard = () => {
             <Target className="text-secondary" size={24} />
           </div>
           <p className="text-2xl font-bold text-secondary">
-            {weeklyStats.workoutsCompleted}/{weeklyStats.totalWorkouts}
+            {stats?.total_workouts || 0}
           </p>
-          <p className="text-muted-foreground text-sm">Treinos/Semana</p>
+          <p className="text-muted-foreground text-sm">Total Treinos</p>
         </div>
 
         <div className="stat-card">
@@ -130,9 +149,29 @@ const Dashboard = () => {
             <TrendingUp className="text-accent" size={24} />
           </div>
           <p className="text-2xl font-bold text-accent">
-            {weeklyStats.personalRecords}
+            {stats?.total_exercises || 0}
           </p>
-          <p className="text-muted-foreground text-sm">Novos PRs</p>
+          <p className="text-muted-foreground text-sm">Exercícios</p>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-center mb-2">
+            <Dumbbell className="text-primary" size={24} />
+          </div>
+          <p className="text-2xl font-bold text-primary">
+            {stats?.total_weight_lifted || 0}kg
+          </p>
+          <p className="text-muted-foreground text-sm">Peso Total</p>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-center mb-2">
+            <Flame className="text-destructive" size={24} />
+          </div>
+          <p className="text-2xl font-bold text-destructive">
+            {stats?.longest_streak || 0}
+          </p>
+          <p className="text-muted-foreground text-sm">Recorde</p>
         </div>
       </div>
 
