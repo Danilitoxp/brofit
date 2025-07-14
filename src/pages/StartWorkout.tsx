@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Play, Plus, Timer, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const StartWorkout = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isActive, setIsActive] = useState(false);
   const [time, setTime] = useState(0);
   const [exercises] = useState([
@@ -53,6 +55,34 @@ const StartWorkout = () => {
   };
 
   const completedCount = Object.values(exerciseData).filter((ex: any) => ex.completed).length;
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (isActive) {
+      interval = setInterval(() => {
+        setTime(time => time + 1);
+      }, 1000);
+    } else if (!isActive && time !== 0) {
+      if (interval) clearInterval(interval);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isActive, time]);
+
+  const finishWorkout = () => {
+    if (completedCount === 0) return;
+    
+    setIsActive(false);
+    toast({
+      title: "Treino Finalizado!",
+      description: `Parabéns! Você completou ${completedCount} exercícios em ${formatTime(time)}.`,
+    });
+    
+    // Aqui você pode salvar o treino no banco de dados
+    navigate('/dashboard');
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20 px-4 pt-6">
@@ -171,6 +201,7 @@ const StartWorkout = () => {
           size="lg"
           className="w-full h-14"
           disabled={completedCount === 0}
+          onClick={finishWorkout}
         >
           <Check className="mr-2" size={20} />
           Finalizar Treino ({completedCount}/{exercises.length})
