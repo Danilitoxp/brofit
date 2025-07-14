@@ -43,7 +43,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
             <div className="animate-pulse space-y-4">
@@ -58,7 +58,7 @@ const Profile = () => {
 
   if (isEditing) {
     return (
-      <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-2">Editar Perfil</h1>
@@ -83,7 +83,7 @@ const Profile = () => {
   const bmi = calculateBMI(profile?.weight, profile?.height);
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

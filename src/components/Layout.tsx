@@ -4,7 +4,7 @@ import Navigation from "./Navigation";
 const Layout = () => {
   return (
     <div className="min-h-screen bg-background">
-      <main className="relative">
+      <main className="relative pb-20 safe-bottom">
         <Outlet />
       </main>
       <Navigation />

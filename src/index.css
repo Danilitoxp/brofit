@@ -222,6 +222,7 @@
   /* Garantir que cards não sejam muito pequenos em mobile */
   .floating-card {
     min-height: 44px; /* Área de toque mínima recomendada */
+    padding: 1rem; /* Reduzir padding em mobile */
   }
   
   /* Melhorar espaçamento em telas menores */
@@ -232,10 +233,48 @@
   /* Ajustar texto para mobile */
   h1 {
     font-size: 1.75rem;
+    line-height: 1.2;
   }
   
   h2 {
     font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+  
+  /* Melhorar grid responsivo */
+  .grid-cols-1.lg\\:grid-cols-3 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  /* Melhorar botões em mobile */
+  .hover-scale {
+    transition: var(--transition-smooth);
+  }
+  
+  .hover-scale:active {
+    transform: scale(0.95);
+  }
+  
+  /* Avatar responsivo */
+  .w-24.h-24 {
+    width: 4rem;
+    height: 4rem;
+  }
+  
+  /* Stats cards menores em mobile */
+  .stat-card {
+    padding: 0.75rem;
   }
 }
 

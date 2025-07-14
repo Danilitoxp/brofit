@@ -233,7 +233,7 @@ const Friends = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
             <div className="animate-pulse space-y-4">
@@ -247,13 +247,13 @@ const Friends = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2 flex items-center">
-              <Users className="mr-3 text-primary" size={32} />
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center">
+              <Users className="mr-2 md:mr-3 text-primary" size={28} />
               Amigos
             </h1>
             <p className="text-muted-foreground">
@@ -297,17 +297,17 @@ const Friends = () => {
         {/* Tabs */}
         <Tabs defaultValue="friends" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="friends" className="flex items-center gap-2">
-              <Users size={16} />
-              Amigos ({friends.length})
+            <TabsTrigger value="friends" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <Users size={14} />
+              <span className="hidden sm:inline">Amigos</span> ({friends.length})
             </TabsTrigger>
-            <TabsTrigger value="requests" className="flex items-center gap-2">
-              <UserPlus size={16} />
-              Solicitações ({pendingRequests.length})
+            <TabsTrigger value="requests" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <UserPlus size={14} />
+              <span className="hidden sm:inline">Solicitações</span> ({pendingRequests.length})
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
-              <Bell size={16} />
-              Notificações ({unreadCount})
+            <TabsTrigger value="notifications" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <Bell size={14} />
+              <span className="hidden sm:inline">Notificações</span> ({unreadCount})
             </TabsTrigger>
           </TabsList>
 

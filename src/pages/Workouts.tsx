@@ -64,7 +64,7 @@ const Workouts = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
             <div className="animate-pulse space-y-4">
@@ -79,7 +79,7 @@ const Workouts = () => {
 
   if (showForm) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-2">
@@ -102,17 +102,17 @@ const Workouts = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Meus Treinos</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Meus Treinos</h1>
             <p className="text-muted-foreground">
               Gerencie sua rotina de treinos semanal
             </p>
           </div>
-          <Button onClick={() => setShowForm(true)} className="hover-scale">
+          <Button onClick={() => setShowForm(true)} className="hover-scale w-full sm:w-auto">
             <Plus size={20} className="mr-2" />
             Novo Treino
           </Button>
