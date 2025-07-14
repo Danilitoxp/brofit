@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      exercise_records: {
+        Row: {
+          achieved_at: string
+          created_at: string
+          exercise_name: string
+          id: string
+          max_reps: number
+          max_weight: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          created_at?: string
+          exercise_name: string
+          id?: string
+          max_reps?: number
+          max_weight?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          max_reps?: number
+          max_weight?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -180,7 +273,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_exercise_record: {
+        Args: { p_exercise_name: string; p_weight: number; p_reps: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,235 +1,280 @@
 import { useState } from "react";
-import { Trophy, Medal, TrendingUp, Users, Target, Crown } from "lucide-react";
+import { Trophy, Medal, Crown, Target, Users, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRanking, RankingEntry } from "@/hooks/useRanking";
+import { useEffect } from "react";
 
 const Ranking = () => {
-  const [selectedExercise, setSelectedExercise] = useState("Supino Reto");
-  const [rankingType, setRankingType] = useState("friends"); // friends | global
+  const { loading, exerciseNames, getExerciseRanking, getGeneralRanking, getFriendsRanking } = useRanking();
+  const [selectedExercise, setSelectedExercise] = useState<string>("");
+  const [generalRanking, setGeneralRanking] = useState<RankingEntry[]>([]);
+  const [exerciseRanking, setExerciseRanking] = useState<RankingEntry[]>([]);
+  const [friendsRanking, setFriendsRanking] = useState<RankingEntry[]>([]);
+  const [loadingRanking, setLoadingRanking] = useState(false);
 
-  const exercises = [
-    "Supino Reto",
-    "Agachamento",
-    "Levantamento Terra",
-    "Desenvolvimento",
-    "Rosca Direta"
-  ];
-
-  const friendsRanking = [
-    { 
-      id: 1, 
-      name: "João Silva", 
-      weight: 120, 
-      avatar: "🔥",
-      streak: 15,
-      isMe: false
-    },
-    { 
-      id: 2, 
-      name: "Você", 
-      weight: 110, 
-      avatar: "💪",
-      streak: 12,
-      isMe: true
-    },
-    { 
-      id: 3, 
-      name: "Carlos Mendez", 
-      weight: 105, 
-      avatar: "⚡",
-      streak: 8,
-      isMe: false
-    },
-    { 
-      id: 4, 
-      name: "Rafael Costa", 
-      weight: 100, 
-      avatar: "🎯",
-      streak: 20,
-      isMe: false
-    },
-    { 
-      id: 5, 
-      name: "Bruno Alves", 
-      weight: 95, 
-      avatar: "🚀",
-      streak: 5,
-      isMe: false
-    },
-  ];
-
-  const globalRanking = [
-    { 
-      id: 1, 
-      name: "Beast Mode Pro", 
-      weight: 180, 
-      avatar: "👑",
-      streak: 45,
-      isMe: false
-    },
-    { 
-      id: 2, 
-      name: "Iron Warrior", 
-      weight: 165, 
-      avatar: "⚔️",
-      streak: 32,
-      isMe: false
-    },
-    { 
-      id: 3, 
-      name: "Strength King", 
-      weight: 155, 
-      avatar: "🦍",
-      streak: 28,
-      isMe: false
-    },
-  ];
-
-  const currentRanking = rankingType === "friends" ? friendsRanking : globalRanking;
-
-  const getRankBadge = (position: number, isMe: boolean) => {
-    if (position === 1) return "rank-1";
-    if (position === 2) return "rank-2";
-    if (position === 3) return "rank-3";
-    if (isMe) return "bg-primary/20 border-primary";
-    return "bg-card";
+  const fetchGeneralRanking = async () => {
+    setLoadingRanking(true);
+    try {
+      const data = await getGeneralRanking(50);
+      setGeneralRanking(data);
+    } finally {
+      setLoadingRanking(false);
+    }
   };
 
-  const getRankIcon = (position: number) => {
-    if (position === 1) return <Crown className="text-accent-foreground" size={20} />;
-    if (position === 2) return <Medal className="text-primary-foreground" size={20} />;
-    if (position === 3) return <Trophy className="text-secondary-foreground" size={20} />;
-    return <span className="text-muted-foreground font-bold">#{position}</span>;
+  const fetchExerciseRanking = async (exercise: string) => {
+    if (!exercise) return;
+    setLoadingRanking(true);
+    try {
+      const data = await getExerciseRanking(exercise, 50);
+      setExerciseRanking(data);
+    } finally {
+      setLoadingRanking(false);
+    }
   };
 
-  return (
-    <div className="min-h-screen bg-background pb-20 px-4 pt-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold bg-gradient-ranking bg-clip-text text-transparent mb-2">
-          Rankings
-        </h1>
-        <p className="text-muted-foreground">
-          Compete com seus amigos e suba no ranking!
-        </p>
-      </div>
+  const fetchFriendsRanking = async (exercise?: string) => {
+    setLoadingRanking(true);
+    try {
+      const data = await getFriendsRanking(exercise);
+      setFriendsRanking(data);
+    } finally {
+      setLoadingRanking(false);
+    }
+  };
 
-      {/* Exercise Selector */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3">Exercício</h3>
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {exercises.map((exercise) => (
-            <Button
-              key={exercise}
-              variant={selectedExercise === exercise ? "default" : "outline"}
-              size="sm"
-              className="whitespace-nowrap"
-              onClick={() => setSelectedExercise(exercise)}
-            >
-              {exercise}
-            </Button>
-          ))}
-        </div>
-      </div>
+  useEffect(() => {
+    fetchGeneralRanking();
+    fetchFriendsRanking();
+  }, []);
 
-      {/* Ranking Type Toggle */}
-      <div className="flex gap-2 mb-6">
-        <Button
-          variant={rankingType === "friends" ? "default" : "outline"}
-          className="flex-1"
-          onClick={() => setRankingType("friends")}
-        >
-          <Users className="mr-2" size={16} />
-          Amigos
-        </Button>
-        <Button
-          variant={rankingType === "global" ? "default" : "outline"}
-          className="flex-1"
-          onClick={() => setRankingType("global")}
-        >
-          <Trophy className="mr-2" size={16} />
-          Global
-        </Button>
-      </div>
+  useEffect(() => {
+    if (selectedExercise) {
+      fetchExerciseRanking(selectedExercise);
+      fetchFriendsRanking(selectedExercise);
+    }
+  }, [selectedExercise]);
 
-      {/* My Position Card */}
-      {rankingType === "friends" && (
-        <div className="floating-card mb-6 bg-gradient-primary p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-primary-foreground/80 text-sm">Sua Posição</p>
-              <p className="text-2xl font-bold text-primary-foreground">#2</p>
-            </div>
-            <div className="text-right">
-              <p className="text-primary-foreground/80 text-sm">Recorde Pessoal</p>
-              <p className="text-2xl font-bold text-primary-foreground">110kg</p>
-            </div>
-          </div>
-          
-          <div className="mt-4 pt-4 border-t border-primary-foreground/20">
-            <div className="flex items-center justify-between text-primary-foreground/80 text-sm">
-              <span>Próximo objetivo: ultrapassar João Silva</span>
-              <span className="font-semibold">+10kg</span>
-            </div>
-          </div>
-        </div>
-      )}
+  const getRankIcon = (rank: number) => {
+    switch (rank) {
+      case 1: return <Crown className="w-6 h-6 text-yellow-500" />;
+      case 2: return <Medal className="w-6 h-6 text-gray-400" />;
+      case 3: return <Medal className="w-6 h-6 text-amber-600" />;
+      default: return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold text-muted-foreground">#{rank}</span>;
+    }
+  };
 
-      {/* Ranking List */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">
-            {rankingType === "friends" ? "Ranking dos Amigos" : "Ranking Global"}
-          </h3>
-          <TrendingUp className="text-primary" size={20} />
-        </div>
+  const getRankBadgeVariant = (rank: number) => {
+    switch (rank) {
+      case 1: return "default";
+      case 2: return "secondary";
+      case 3: return "outline";
+      default: return "outline";
+    }
+  };
 
-        {currentRanking.map((user, index) => (
-          <div
-            key={user.id}
-            className={`floating-card p-4 ${getRankBadge(index + 1, user.isMe)} ${
-              user.isMe ? 'ring-2 ring-primary' : ''
-            }`}
-          >
-            <div className="flex items-center justify-between">
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const RankingList = ({ data, showTotalScore = false }: { data: RankingEntry[], showTotalScore?: boolean }) => (
+    <div className="space-y-3">
+      {data.length === 0 ? (
+        <Card className="floating-card p-8 text-center">
+          <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">Nenhum dado encontrado</h3>
+          <p className="text-muted-foreground">
+            {selectedExercise 
+              ? "Ninguém registrou esse exercício ainda."
+              : "Ainda não há registros suficientes para criar um ranking."
+            }
+          </p>
+        </Card>
+      ) : (
+        data.map((entry) => (
+          <Card key={entry.user_id} className="floating-card p-4 hover:scale-[1.01] transition-all duration-300">
+            <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                  {getRankIcon(index + 1)}
+                {getRankIcon(entry.rank)}
+                <Badge variant={getRankBadgeVariant(entry.rank)} className="min-w-[40px] justify-center">
+                  {entry.rank}º
+                </Badge>
+              </div>
+
+              <Avatar className="w-12 h-12">
+                <AvatarImage src={entry.avatar_url} />
+                <AvatarFallback className="bg-gradient-primary text-primary-foreground">
+                  {getInitials(entry.display_name)}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1">
+                <h3 className="font-semibold">{entry.display_name}</h3>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  {showTotalScore ? (
+                    <span>Total: {entry.total_score?.toFixed(1) || 0}kg</span>
+                  ) : (
+                    <>
+                      <span>Peso: {entry.max_weight}kg</span>
+                      <span>Reps: {entry.max_reps}</span>
+                    </>
+                  )}
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{user.avatar}</span>
-                  <div>
-                    <p className={`font-semibold ${user.isMe ? 'text-primary' : ''}`}>
-                      {user.name}
-                    </p>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Target size={12} />
-                      <span>{user.streak} dias de sequência</span>
-                    </div>
+              </div>
+
+              {entry.rank <= 3 && (
+                <div className="text-right">
+                  <div className={`text-2xl font-bold ${
+                    entry.rank === 1 ? 'text-yellow-500' : 
+                    entry.rank === 2 ? 'text-gray-400' : 'text-amber-600'
+                  }`}>
+                    {showTotalScore ? `${entry.total_score?.toFixed(0)}kg` : `${entry.max_weight}kg`}
                   </div>
                 </div>
-              </div>
-              
-              <div className="text-right">
-                <p className="text-2xl font-bold">{user.weight}kg</p>
-                <p className="text-sm text-muted-foreground">Recorde</p>
-              </div>
+              )}
+            </div>
+          </Card>
+        ))
+      )}
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-muted rounded w-48 mx-auto"></div>
+              <div className="h-4 bg-muted rounded w-64 mx-auto"></div>
             </div>
           </div>
-        ))}
+        </div>
       </div>
+    );
+  }
 
-      {/* Achievement Hint */}
-      <div className="mt-8 p-4 bg-accent/10 border border-accent/30 rounded-2xl">
-        <div className="flex items-center gap-3">
-          <Crown className="text-accent" size={24} />
+  return (
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <p className="font-semibold text-accent">Dica de Conquista</p>
-            <p className="text-sm text-muted-foreground">
-              Bata seu recorde pessoal para ganhar +50 XP!
+            <h1 className="text-3xl font-bold mb-2 flex items-center">
+              <Trophy className="mr-3 text-primary" size={32} />
+              Rankings
+            </h1>
+            <p className="text-muted-foreground">
+              Compare seu progresso com outros atletas
             </p>
           </div>
         </div>
+
+        {/* Filtros */}
+        <Card className="floating-card p-6 mb-6">
+          <div className="flex items-center gap-4">
+            <Filter size={20} className="text-muted-foreground" />
+            <div className="flex-1">
+              <Select value={selectedExercise} onValueChange={setSelectedExercise}>
+                <SelectTrigger className="max-w-xs">
+                  <SelectValue placeholder="Selecione um exercício" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Ranking Geral</SelectItem>
+                  {exerciseNames.map((exercise) => (
+                    <SelectItem key={exercise} value={exercise}>
+                      {exercise}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" onClick={() => {
+              if (selectedExercise) {
+                fetchExerciseRanking(selectedExercise);
+                fetchFriendsRanking(selectedExercise);
+              } else {
+                fetchGeneralRanking();
+                fetchFriendsRanking();
+              }
+            }}>
+              Atualizar
+            </Button>
+          </div>
+        </Card>
+
+        {/* Tabs de Rankings */}
+        <Tabs defaultValue="global" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="global" className="flex items-center gap-2">
+              <Trophy size={16} />
+              Ranking Global
+            </TabsTrigger>
+            <TabsTrigger value="friends" className="flex items-center gap-2">
+              <Users size={16} />
+              Amigos
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="global" className="mt-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">
+                  {selectedExercise ? `Ranking - ${selectedExercise}` : "Ranking Geral"}
+                </h2>
+                {loadingRanking && (
+                  <div className="animate-pulse text-sm text-muted-foreground">
+                    Carregando...
+                  </div>
+                )}
+              </div>
+
+              <RankingList 
+                data={selectedExercise ? exerciseRanking : generalRanking} 
+                showTotalScore={!selectedExercise}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="friends" className="mt-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">
+                  {selectedExercise ? `Amigos - ${selectedExercise}` : "Ranking dos Amigos"}
+                </h2>
+                {loadingRanking && (
+                  <div className="animate-pulse text-sm text-muted-foreground">
+                    Carregando...
+                  </div>
+                )}
+              </div>
+
+              {friendsRanking.length === 0 ? (
+                <Card className="floating-card p-8 text-center">
+                  <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Nenhum amigo encontrado</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Adicione amigos para ver como vocês se comparam!
+                  </p>
+                  <Button variant="outline">
+                    <Target className="mr-2" size={16} />
+                    Encontrar Amigos
+                  </Button>
+                </Card>
+              ) : (
+                <RankingList 
+                  data={friendsRanking} 
+                  showTotalScore={!selectedExercise}
+                />
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
