@@ -6,12 +6,17 @@ import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkouts } from "@/hooks/useWorkouts";
+import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const StartWorkout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const { workouts } = useWorkouts();
+  const { stats, updateStats } = useProfile();
+  const { user } = useAuth();
   const [isActive, setIsActive] = useState(false);
   const [time, setTime] = useState(0);
 
@@ -105,17 +110,78 @@ const StartWorkout = () => {
     };
   }, [isActive, time]);
 
-  const finishWorkout = () => {
+  const finishWorkout = async () => {
     if (completedCount === 0) return;
     
     setIsActive(false);
-    toast({
-      title: "Treino Finalizado!",
-      description: `Parabéns! Você completou ${completedCount} exercícios em ${formatTime(time)}.`,
-    });
     
-    // Aqui você pode salvar o treino no banco de dados
-    navigate('/');
+    try {
+      // Calcular total de peso levantado no treino
+      const totalWeight = Object.entries(exerciseData).reduce((total, [index, data]: [string, any]) => {
+        if (data.completed && data.weight && data.reps) {
+          const exercise = exercises[parseInt(index)];
+          return total + (data.weight * data.reps * exercise.sets);
+        }
+        return total;
+      }, 0);
+
+      // Atualizar registros de exercícios (recordes pessoais)
+      for (const [index, data] of Object.entries(exerciseData)) {
+        if ((data as any).completed && (data as any).weight && (data as any).reps) {
+          const exercise = exercises[parseInt(index)];
+          await supabase.rpc('update_exercise_record', {
+            p_exercise_name: exercise.exercise_name,
+            p_weight: (data as any).weight,
+            p_reps: (data as any).reps
+          });
+        }
+      }
+
+      // Calcular nova sequência
+      const today = new Date().toISOString().split('T')[0];
+      const lastWorkoutDate = stats?.last_workout_date;
+      let newStreak = 1;
+      
+      if (lastWorkoutDate) {
+        const lastDate = new Date(lastWorkoutDate);
+        const todayDate = new Date(today);
+        const diffTime = todayDate.getTime() - lastDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          // Treino em dias consecutivos
+          newStreak = (stats?.current_streak || 0) + 1;
+        } else if (diffDays === 0) {
+          // Mesmo dia, manter sequência
+          newStreak = stats?.current_streak || 1;
+        }
+        // Se mais de 1 dia, sequência quebra (newStreak = 1)
+      }
+
+      // Atualizar estatísticas
+      await updateStats({
+        total_workouts: (stats?.total_workouts || 0) + 1,
+        total_exercises: (stats?.total_exercises || 0) + completedCount,
+        total_weight_lifted: (stats?.total_weight_lifted || 0) + totalWeight,
+        current_streak: newStreak,
+        longest_streak: Math.max(newStreak, stats?.longest_streak || 0),
+        last_workout_date: today
+      });
+
+      toast({
+        title: "Treino Finalizado!",
+        description: `Parabéns! Você completou ${completedCount} exercícios em ${formatTime(time)}. ${totalWeight > 0 ? `Total: ${totalWeight}kg levantados!` : ''}`,
+      });
+      
+      navigate('/');
+    } catch (error) {
+      console.error('Erro ao salvar treino:', error);
+      toast({
+        title: "Treino Finalizado!",
+        description: `Parabéns! Você completou ${completedCount} exercícios em ${formatTime(time)}.`,
+      });
+      navigate('/');
+    }
   };
 
   return (
