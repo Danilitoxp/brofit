@@ -13,7 +13,7 @@ import { pt } from "date-fns/locale";
 
 const Profile = () => {
   const { user } = useAuth();
-  const { profile, stats, loading, updateProfile, calculateAge, calculateBMI } = useProfile();
+  const { profile, stats, loading, updateProfile, uploadAvatar, calculateAge, calculateBMI } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,6 +71,7 @@ const Profile = () => {
             profile={profile}
             onSubmit={handleSubmit}
             onCancel={() => setIsEditing(false)}
+            onAvatarUpload={uploadAvatar}
             isLoading={isSubmitting}
           />
         </div>

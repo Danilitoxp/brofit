@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CalendarIcon, X, Camera, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ interface ProfileFormProps {
   profile: Profile | null;
   onSubmit: (profile: Partial<Profile>) => void;
   onCancel: () => void;
+  onAvatarUpload: (file: File) => Promise<string | null>;
   isLoading?: boolean;
 }
 
@@ -27,7 +29,7 @@ const EXPERIENCE_LEVELS = [
   { value: 'advanced', label: 'Avançado' }
 ];
 
-export const ProfileForm = ({ profile, onSubmit, onCancel, isLoading }: ProfileFormProps) => {
+export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoading }: ProfileFormProps) => {
   const [formData, setFormData] = useState<Partial<Profile>>({
     display_name: profile?.display_name || "",
     bio: profile?.bio || "",
@@ -36,15 +38,50 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, isLoading }: ProfileF
     fitness_goal: profile?.fitness_goal || "",
     experience_level: profile?.experience_level || undefined,
     is_public: profile?.is_public ?? true,
-    birth_date: profile?.birth_date || undefined
+    birth_date: profile?.birth_date || undefined,
+    avatar_url: profile?.avatar_url || ""
   });
 
   const [birthDate, setBirthDate] = useState<Date | undefined>(
     profile?.birth_date ? new Date(profile.birth_date) : undefined
   );
 
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
   const handleInputChange = (field: keyof Profile, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione apenas arquivos de imagem.');
+      return;
+    }
+
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const avatarUrl = await onAvatarUpload(file);
+      if (avatarUrl) {
+        handleInputChange('avatar_url', avatarUrl);
+      }
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -63,6 +100,54 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, isLoading }: ProfileF
   return (
     <Card className="floating-card p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Upload de Avatar */}
+        <div className="flex flex-col items-center space-y-4">
+          <Avatar className="w-24 h-24">
+            <AvatarImage src={formData.avatar_url} />
+            <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
+              {getInitials(formData.display_name)}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex flex-col items-center gap-2">
+            <Label htmlFor="avatar-upload" className="cursor-pointer">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="relative overflow-hidden"
+                disabled={isUploadingAvatar}
+                asChild
+              >
+                <span>
+                  {isUploadingAvatar ? (
+                    <>
+                      <Upload className="w-4 h-4 mr-2 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4 mr-2" />
+                      Alterar foto
+                    </>
+                  )}
+                </span>
+              </Button>
+            </Label>
+            <Input
+              id="avatar-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
+              disabled={isUploadingAvatar}
+            />
+            <p className="text-xs text-muted-foreground text-center">
+              JPG, PNG ou GIF até 5MB
+            </p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Nome de exibição */}
           <div className="space-y-2">

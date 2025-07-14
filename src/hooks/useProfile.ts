@@ -75,6 +75,37 @@ export const useProfile = () => {
     }
   };
 
+  const uploadAvatar = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, {
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Erro ao fazer upload do avatar:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível fazer upload da imagem.",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return;
 
@@ -151,6 +182,7 @@ export const useProfile = () => {
     loading,
     updateProfile,
     updateStats,
+    uploadAvatar,
     refetch: fetchProfile,
     calculateAge,
     calculateBMI
