@@ -115,7 +115,7 @@ const Profile = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-2xl font-bold">
-                      {profile?.display_name || user?.email?.split('@')[0]}
+                      {profile?.display_name || "Usuário"}
                     </h2>
                     <Badge variant={profile?.is_public ? "default" : "secondary"}>
                       {profile?.is_public ? (
