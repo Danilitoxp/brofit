@@ -8,6 +8,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Workouts from "./pages/Workouts";
+import StartWorkout from "./pages/StartWorkout";
+import QuickWorkout from "./pages/QuickWorkout";
+import Progress from "./pages/Progress";
 import Ranking from "./pages/Ranking";
 import Friends from "./pages/Friends";
 import Profile from "./pages/Profile";
@@ -25,6 +28,16 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/start-workout" element={
+              <ProtectedRoute>
+                <StartWorkout />
+              </ProtectedRoute>
+            } />
+            <Route path="/quick-workout" element={
+              <ProtectedRoute>
+                <QuickWorkout />
+              </ProtectedRoute>
+            } />
             <Route path="/" element={
               <ProtectedRoute>
                 <Layout />
@@ -32,6 +45,7 @@ const App = () => (
             }>
               <Route index element={<Dashboard />} />
               <Route path="workouts" element={<Workouts />} />
+              <Route path="progress" element={<Progress />} />
               <Route path="ranking" element={<Ranking />} />
               <Route path="friends" element={<Friends />} />
               <Route path="profile" element={<Profile />} />

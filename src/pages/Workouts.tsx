@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Plus, Calendar, Clock, Dumbbell, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Workouts = () => {
+  const navigate = useNavigate();
   const [weeklyPlan] = useState([
     { 
       day: "Segunda", 
@@ -138,6 +140,7 @@ const Workouts = () => {
                 size="sm" 
                 variant={workout.completed ? "secondary" : "default"}
                 disabled={workout.completed}
+                onClick={() => !workout.completed && navigate('/start-workout')}
               >
                 {workout.completed ? "✅ Concluído" : "Iniciar"}
               </Button>

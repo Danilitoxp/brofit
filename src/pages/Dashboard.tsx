@@ -107,6 +107,7 @@ const Dashboard = () => {
           variant="glass" 
           size="lg" 
           className="w-full text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/10"
+          onClick={() => navigate('/start-workout')}
         >
           {todayWorkout.completed ? "✅ Treino Concluído" : "🔥 Iniciar Treino"}
         </Button>
@@ -139,12 +140,20 @@ const Dashboard = () => {
       <div className="space-y-3">
         <h3 className="text-lg font-semibold mb-3">Ações Rápidas</h3>
         
-        <Button variant="outline" className="w-full justify-start h-14">
+        <Button 
+          variant="outline" 
+          className="w-full justify-start h-14"
+          onClick={() => navigate('/quick-workout')}
+        >
           <Dumbbell className="mr-3" size={20} />
           Registrar Treino Rápido
         </Button>
         
-        <Button variant="outline" className="w-full justify-start h-14">
+        <Button 
+          variant="outline" 
+          className="w-full justify-start h-14"
+          onClick={() => navigate('/progress')}
+        >
           <TrendingUp className="mr-3" size={20} />
           Ver Evolução
         </Button>
