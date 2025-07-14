@@ -126,7 +126,7 @@ const Profile = () => {
                     </Badge>
                   </div>
                   
-                  <p className="text-muted-foreground mb-3">{user?.email}</p>
+                  <p className="text-muted-foreground mb-3 break-all text-sm">{user?.email}</p>
                   
                   {profile?.experience_level && (
                     <Badge variant="outline" className="mb-3">
