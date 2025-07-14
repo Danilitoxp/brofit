@@ -102,59 +102,67 @@ const Profile = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Informações Básicas */}
             <Card className="floating-card p-6">
-              <div className="flex items-start gap-6">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
-                    {getInitials(profile?.display_name)}
-                  </AvatarFallback>
-                </Avatar>
+              <div className="flex flex-wrap items-start gap-6">
+  {/* Avatar com destaque */}
+  <Avatar className="w-24 h-24 ring-2 ring-primary">
+    <AvatarImage src={profile?.avatar_url} />
+    <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
+      {getInitials(profile?.display_name)}
+    </AvatarFallback>
+  </Avatar>
 
-                <div className="flex-1">
-                  {/* Nome Principal */}
-                  <div className="mb-4">
-                    <h2 className="text-3xl font-bold mb-2">
-                      {profile?.display_name || "Usuário"}
-                    </h2>
-                    <div className="flex items-center gap-3 mb-3">
-                      <Badge variant={profile?.is_public ? "default" : "secondary"}>
-                        {profile?.is_public ? <><Eye size={12} className="mr-1" /> Público</> : <><EyeOff size={12} className="mr-1" /> Privado</>}
-                      </Badge>
-                      {profile?.experience_level && <Badge variant="outline">
-                          {getExperienceLabel(profile.experience_level)}
-                        </Badge>}
-                    </div>
-                  </div>
+  {/* Conteúdo principal */}
+  <div className="flex-1 space-y-6">
+    
+    {/* Nome e Badges */}
+    <div>
+      <h2 className="text-3xl font-bold">{profile?.display_name || "Usuário"}</h2>
+      <div className="flex flex-wrap items-center gap-3 mt-2">
+        <Badge variant={profile?.is_public ? "default" : "secondary"}>
+          {profile?.is_public ? <><Eye size={12} className="mr-1" /> Público</> : <><EyeOff size={12} className="mr-1" /> Privado</>}
+        </Badge>
+        {profile?.experience_level && (
+          <Badge variant="outline">{getExperienceLabel(profile.experience_level)}</Badge>
+        )}
+      </div>
+    </div>
 
-                  {/* ID para Amigos */}
-                  <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-sm text-primary mb-1">
-                          🆔 ID para Amigos
-                        </h3>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Compartilhe este ID para que amigos possam te encontrar
-                        </p>
-                        <code className="bg-muted px-2 py-1 rounded text-sm font-mono">
-                          {user?.id?.slice(0, 8)}...{user?.id?.slice(-4)}
-                        </code>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => {
-                      navigator.clipboard.writeText(user?.id || '');
-                      toast({
-                        title: "ID copiado!",
-                        description: "O ID foi copiado para a área de transferência."
-                      });
-                    }}>
-                        Copiar
-                      </Button>
-                    </div>
-                  </div>
+    {/* ID para Amigos */}
+    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h3 className="font-semibold text-sm text-primary mb-1">🆔 ID para Amigos</h3>
+          <p className="text-xs text-muted-foreground mb-2">
+            Compartilhe este ID para que amigos possam te encontrar
+          </p>
+          <code className="bg-muted px-2 py-1 rounded text-sm font-mono">
+            {user?.id?.slice(0, 8)}...{user?.id?.slice(-4)}
+          </code>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="self-start"
+          onClick={() => {
+            navigator.clipboard.writeText(user?.id || "");
+            toast({
+              title: "ID copiado!",
+              description: "O ID foi copiado para a área de transferência.",
+            });
+          }}
+        >
+          Copiar
+        </Button>
+      </div>
+    </div>
 
-                  {profile?.bio && <p className="text-sm text-muted-foreground">{profile.bio}</p>}
-                </div>
-              </div>
+    {/* Bio (se existir) */}
+    {profile?.bio && (
+      <p className="text-sm text-muted-foreground">{profile.bio}</p>
+    )}
+  </div>
+</div>
+
             </Card>
 
             {/* Informações Pessoais e de Contato */}
