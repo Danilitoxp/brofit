@@ -140,7 +140,7 @@ const Dashboard = () => {
       </div>
 
       {/* Weekly Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="stat-card">
           <div className="flex items-center justify-center mb-2">
             <Target className="text-secondary" size={24} />
@@ -161,15 +161,6 @@ const Dashboard = () => {
           <p className="text-muted-foreground text-sm">Exercícios</p>
         </div>
 
-        <div className="stat-card">
-          <div className="flex items-center justify-center mb-2">
-            <Dumbbell className="text-primary" size={24} />
-          </div>
-          <p className="text-2xl font-bold text-primary">
-            {stats?.total_weight_lifted || 0}kg
-          </p>
-          <p className="text-muted-foreground text-sm">Peso Total</p>
-        </div>
 
         <div className="stat-card">
           <div className="flex items-center justify-center mb-2">
@@ -185,15 +176,6 @@ const Dashboard = () => {
       {/* Quick Actions */}
       <div className="space-y-3">
         <h3 className="text-lg font-semibold mb-3">Ações Rápidas</h3>
-        
-        <Button 
-          variant="outline" 
-          className="w-full justify-start h-14"
-          onClick={() => navigate('/quick-workout')}
-        >
-          <Dumbbell className="mr-3" size={20} />
-          Registrar Treino Rápido
-        </Button>
         
         <Button 
           variant="outline" 

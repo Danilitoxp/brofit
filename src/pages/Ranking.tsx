@@ -10,25 +10,14 @@ import { useRanking, RankingEntry } from "@/hooks/useRanking";
 import { useEffect } from "react";
 
 const Ranking = () => {
-  const { loading, exerciseNames, getExerciseRanking, getGeneralRanking, getFriendsRanking } = useRanking();
-  const [selectedExercise, setSelectedExercise] = useState<string>("general");
-  const [generalRanking, setGeneralRanking] = useState<RankingEntry[]>([]);
+  const { loading, exerciseNames, getExerciseRanking, getFriendsRanking } = useRanking();
+  const [selectedExercise, setSelectedExercise] = useState<string>("");
   const [exerciseRanking, setExerciseRanking] = useState<RankingEntry[]>([]);
   const [friendsRanking, setFriendsRanking] = useState<RankingEntry[]>([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
 
-  const fetchGeneralRanking = async () => {
-    setLoadingRanking(true);
-    try {
-      const data = await getGeneralRanking(50);
-      setGeneralRanking(data);
-    } finally {
-      setLoadingRanking(false);
-    }
-  };
-
   const fetchExerciseRanking = async (exercise: string) => {
-    if (!exercise || exercise === "general") return;
+    if (!exercise) return;
     setLoadingRanking(true);
     try {
       const data = await getExerciseRanking(exercise, 50);
@@ -49,16 +38,15 @@ const Ranking = () => {
   };
 
   useEffect(() => {
-    fetchGeneralRanking();
-    fetchFriendsRanking();
-  }, []);
+    if (exerciseNames.length > 0 && !selectedExercise) {
+      setSelectedExercise(exerciseNames[0]);
+    }
+  }, [exerciseNames]);
 
   useEffect(() => {
-    if (selectedExercise && selectedExercise !== "general") {
+    if (selectedExercise) {
       fetchExerciseRanking(selectedExercise);
       fetchFriendsRanking(selectedExercise);
-    } else if (selectedExercise === "general") {
-      fetchFriendsRanking();
     }
   }, [selectedExercise]);
 
@@ -91,10 +79,10 @@ const Ranking = () => {
           <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">Nenhum dado encontrado</h3>
           <p className="text-muted-foreground">
-                 {selectedExercise && selectedExercise !== "general"
-                   ? "Ninguém registrou esse exercício ainda."
-                   : "Ainda não há registros suficientes para criar um ranking."
-                 }
+            {selectedExercise 
+              ? "Ninguém registrou esse exercício ainda."
+              : "Selecione um exercício para ver o ranking."
+            }
           </p>
         </Card>
       ) : (
@@ -187,7 +175,6 @@ const Ranking = () => {
                   <SelectValue placeholder="Selecione um exercício" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="general">Ranking Geral</SelectItem>
                   {exerciseNames.map((exercise) => (
                     <SelectItem key={exercise} value={exercise}>
                       {exercise}
@@ -197,12 +184,9 @@ const Ranking = () => {
               </Select>
             </div>
             <Button variant="outline" onClick={() => {
-              if (selectedExercise && selectedExercise !== "general") {
+              if (selectedExercise) {
                 fetchExerciseRanking(selectedExercise);
                 fetchFriendsRanking(selectedExercise);
-              } else {
-                fetchGeneralRanking();
-                fetchFriendsRanking();
               }
             }}>
               Atualizar
@@ -215,7 +199,7 @@ const Ranking = () => {
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="global" className="flex items-center gap-2">
               <Trophy size={16} />
-              Ranking Global
+              Ranking por Exercício
             </TabsTrigger>
             <TabsTrigger value="friends" className="flex items-center gap-2">
               <Users size={16} />
@@ -227,7 +211,7 @@ const Ranking = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">
-                  {selectedExercise && selectedExercise !== "general" ? `Ranking - ${selectedExercise}` : "Ranking Geral"}
+                  {selectedExercise ? `Ranking - ${selectedExercise}` : "Selecione um exercício"}
                 </h2>
                 {loadingRanking && (
                   <div className="animate-pulse text-sm text-muted-foreground">
@@ -237,8 +221,8 @@ const Ranking = () => {
               </div>
 
               <RankingList 
-                data={selectedExercise && selectedExercise !== "general" ? exerciseRanking : generalRanking} 
-                showTotalScore={!selectedExercise || selectedExercise === "general"}
+                data={exerciseRanking} 
+                showTotalScore={false}
               />
             </div>
           </TabsContent>
@@ -247,7 +231,7 @@ const Ranking = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">
-                  {selectedExercise && selectedExercise !== "general" ? `Amigos - ${selectedExercise}` : "Ranking dos Amigos"}
+                  {selectedExercise ? `Amigos - ${selectedExercise}` : "Ranking dos Amigos"}
                 </h2>
                 {loadingRanking && (
                   <div className="animate-pulse text-sm text-muted-foreground">
@@ -271,7 +255,7 @@ const Ranking = () => {
               ) : (
                 <RankingList 
                   data={friendsRanking} 
-                  showTotalScore={!selectedExercise || selectedExercise === "general"}
+                  showTotalScore={false}
                 />
               )}
             </div>

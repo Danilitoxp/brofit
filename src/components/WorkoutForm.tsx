@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Trash2, Search } from "lucide-react";
 import { Workout, WorkoutExercise } from "@/hooks/useWorkouts";
+import { PREDEFINED_EXERCISES, EXERCISE_CATEGORIES, getExercisesByCategory } from "@/data/exercises";
 
 interface WorkoutFormProps {
   workout?: Workout;
@@ -25,18 +26,49 @@ const DAYS_OF_WEEK = [
   { value: 6, label: "Sábado" }
 ];
 
+interface ExerciseSet {
+  id: string;
+  reps: number;
+  weight: number;
+}
+
+interface WorkoutExerciseExtended {
+  exercise_name: string;
+  exercise_order: number;
+  sets: ExerciseSet[];
+}
+
 export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutFormProps) => {
   const [name, setName] = useState(workout?.name || "");
-  const [description, setDescription] = useState(workout?.description || "");
   const [dayOfWeek, setDayOfWeek] = useState<number | undefined>(workout?.day_of_week);
-  const [exercises, setExercises] = useState<WorkoutExercise[]>(
-    workout?.exercises || [{ exercise_name: "", sets: 3, reps: 12, weight: 0, exercise_order: 0 }]
+  const [exercises, setExercises] = useState<WorkoutExerciseExtended[]>(
+    workout?.exercises?.map(ex => ({
+      exercise_name: ex.exercise_name,
+      exercise_order: ex.exercise_order,
+      sets: Array.from({ length: ex.sets }, (_, i) => ({
+        id: `${i}`,
+        reps: ex.reps,
+        weight: ex.weight || 0
+      }))
+    })) || []
   );
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const filteredExercises = PREDEFINED_EXERCISES.filter(exercise => {
+    const matchesCategory = selectedCategory === "all" || exercise.category === selectedCategory;
+    const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-  const addExercise = () => {
+  const addExercise = (exerciseName: string) => {
     setExercises([
       ...exercises,
-      { exercise_name: "", sets: 3, reps: 12, weight: 0, exercise_order: exercises.length }
+      {
+        exercise_name: exerciseName,
+        exercise_order: exercises.length,
+        sets: [{ id: '0', reps: 12, weight: 0 }]
+      }
     ]);
   };
 
@@ -44,24 +76,46 @@ export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutF
     setExercises(exercises.filter((_, i) => i !== index));
   };
 
-  const updateExercise = (index: number, field: keyof WorkoutExercise, value: string | number) => {
+  const addSet = (exerciseIndex: number) => {
     const updatedExercises = [...exercises];
-    updatedExercises[index] = { ...updatedExercises[index], [field]: value };
+    const newSetId = updatedExercises[exerciseIndex].sets.length.toString();
+    updatedExercises[exerciseIndex].sets.push({
+      id: newSetId,
+      reps: 12,
+      weight: 0
+    });
+    setExercises(updatedExercises);
+  };
+
+  const removeSet = (exerciseIndex: number, setIndex: number) => {
+    const updatedExercises = [...exercises];
+    updatedExercises[exerciseIndex].sets = updatedExercises[exerciseIndex].sets.filter((_, i) => i !== setIndex);
+    setExercises(updatedExercises);
+  };
+
+  const updateSet = (exerciseIndex: number, setIndex: number, field: 'reps' | 'weight', value: number) => {
+    const updatedExercises = [...exercises];
+    updatedExercises[exerciseIndex].sets[setIndex][field] = value;
     setExercises(updatedExercises);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim()) return;
+    if (!name.trim() || exercises.length === 0) return;
 
-    const validExercises = exercises.filter(ex => ex.exercise_name.trim());
+    const workoutExercises: WorkoutExercise[] = exercises.map((ex, index) => ({
+      exercise_name: ex.exercise_name,
+      exercise_order: index,
+      sets: ex.sets.length,
+      reps: Math.round(ex.sets.reduce((acc, set) => acc + set.reps, 0) / ex.sets.length),
+      weight: Math.round(ex.sets.reduce((acc, set) => acc + set.weight, 0) / ex.sets.length)
+    }));
     
     onSubmit({
       name: name.trim(),
-      description: description.trim(),
       day_of_week: dayOfWeek,
-      exercises: validExercises.map((ex, index) => ({ ...ex, exercise_order: index }))
+      exercises: workoutExercises
     });
   };
 
@@ -79,16 +133,6 @@ export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutF
           />
         </div>
 
-        <div>
-          <Label htmlFor="description">Descrição (opcional)</Label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Descrição do treino..."
-            rows={3}
-          />
-        </div>
 
         <div>
           <Label htmlFor="day">Dia da Semana (opcional)</Label>
@@ -106,84 +150,147 @@ export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutF
           </Select>
         </div>
 
+        {/* Seleção de Exercícios */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <Label>Exercícios</Label>
-            <Button type="button" variant="outline" size="sm" onClick={addExercise}>
-              <Plus size={16} className="mr-2" />
-              Adicionar Exercício
-            </Button>
+          <Label>Buscar e Adicionar Exercícios</Label>
+          
+          {/* Filtros */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <Input
+                placeholder="Buscar exercício..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                {EXERCISE_CATEGORIES.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="space-y-4">
-            {exercises.map((exercise, index) => (
-              <Card key={index} className="p-4 bg-muted/50">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                  <div className="md:col-span-6">
-                    <Label htmlFor={`exercise-${index}`}>Nome do Exercício</Label>
-                    <Input
-                      id={`exercise-${index}`}
-                      value={exercise.exercise_name}
-                      onChange={(e) => updateExercise(index, "exercise_name", e.target.value)}
-                      placeholder="Ex: Supino Reto"
-                    />
+          {/* Lista de exercícios disponíveis */}
+          <div className="max-h-60 overflow-y-auto mb-4 border rounded-lg p-4 bg-muted/30">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {filteredExercises.map((exercise) => (
+                <Button
+                  key={exercise.id}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="justify-start h-auto p-3 text-left"
+                  onClick={() => addExercise(exercise.name)}
+                  disabled={exercises.some(ex => ex.exercise_name === exercise.name)}
+                >
+                  <div>
+                    <div className="font-medium">{exercise.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {exercise.muscle_groups.join(", ")}
+                    </div>
                   </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor={`sets-${index}`}>Séries</Label>
-                    <Input
-                      id={`sets-${index}`}
-                      type="number"
-                      min="1"
-                      value={exercise.sets}
-                      onChange={(e) => updateExercise(index, "sets", parseInt(e.target.value) || 1)}
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor={`reps-${index}`}>Repetições</Label>
-                    <Input
-                      id={`reps-${index}`}
-                      type="number"
-                      min="1"
-                      value={exercise.reps}
-                      onChange={(e) => updateExercise(index, "reps", parseInt(e.target.value) || 1)}
-                    />
-                  </div>
-
-                  <div className="md:col-span-1">
-                    <Label htmlFor={`weight-${index}`}>Peso (kg)</Label>
-                    <Input
-                      id={`weight-${index}`}
-                      type="number"
-                      min="0"
-                      step="0.5"
-                      value={exercise.weight}
-                      onChange={(e) => updateExercise(index, "weight", parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-
-                  <div className="md:col-span-1 flex justify-center">
-                    {exercises.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeExercise(index)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
+        {/* Exercícios Selecionados */}
+        {exercises.length > 0 && (
+          <div>
+            <Label>Exercícios do Treino ({exercises.length})</Label>
+            <div className="space-y-4">
+              {exercises.map((exercise, exerciseIndex) => (
+                <Card key={exerciseIndex} className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold">{exercise.exercise_name}</h4>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeExercise(exerciseIndex)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Séries ({exercise.sets.length})</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addSet(exerciseIndex)}
+                      >
+                        <Plus size={14} className="mr-1" />
+                        Série
+                      </Button>
+                    </div>
+
+                    {exercise.sets.map((set, setIndex) => (
+                      <div key={set.id} className="grid grid-cols-5 gap-3 items-center">
+                        <div className="text-sm font-medium text-center">
+                          {setIndex + 1}ª
+                        </div>
+                        
+                        <div>
+                          <Label className="text-xs">Reps</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={set.reps}
+                            onChange={(e) => updateSet(exerciseIndex, setIndex, 'reps', parseInt(e.target.value) || 1)}
+                            className="h-8"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-xs">Peso (kg)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.5"
+                            value={set.weight}
+                            onChange={(e) => updateSet(exerciseIndex, setIndex, 'weight', parseFloat(e.target.value) || 0)}
+                            className="h-8"
+                          />
+                        </div>
+
+                        <div className="text-center">
+                          {exercise.sets.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeSet(exerciseIndex, setIndex)}
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 size={12} />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-4">
-          <Button type="submit" disabled={isLoading || !name.trim()}>
+          <Button type="submit" disabled={isLoading || !name.trim() || exercises.length === 0}>
             {workout ? "Atualizar Treino" : "Criar Treino"}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel}>
