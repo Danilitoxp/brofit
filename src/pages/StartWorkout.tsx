@@ -41,22 +41,37 @@ const StartWorkout = () => {
   const currentWorkout = getWorkout();
   const exercises = currentWorkout?.exercises || [];
 
-  const [exerciseData, setExerciseData] = useState(
-    exercises.reduce((acc, ex, index) => ({
-      ...acc,
-      [index]: { weight: ex.weight || 0, reps: ex.reps, completed: false }
-    }), {})
-  );
+  // Estrutura de dados para séries: exerciseIndex-setIndex
+  const [seriesData, setSeriesData] = useState(() => {
+    const initialData = {};
+    exercises.forEach((ex, exIndex) => {
+      for (let setIndex = 0; setIndex < ex.sets; setIndex++) {
+        const key = `${exIndex}-${setIndex}`;
+        initialData[key] = {
+          weight: ex.weight || 0,
+          reps: ex.reps,
+          completed: false
+        };
+      }
+    });
+    return initialData;
+  });
 
-  // Atualizar exerciseData quando os exercícios mudarem
+  // Atualizar seriesData quando os exercícios mudarem
   useEffect(() => {
     if (exercises.length > 0) {
-      setExerciseData(
-        exercises.reduce((acc, ex, index) => ({
-          ...acc,
-          [index]: { weight: ex.weight || 0, reps: ex.reps, completed: false }
-        }), {})
-      );
+      const newData = {};
+      exercises.forEach((ex, exIndex) => {
+        for (let setIndex = 0; setIndex < ex.sets; setIndex++) {
+          const key = `${exIndex}-${setIndex}`;
+          newData[key] = {
+            weight: ex.weight || 0,
+            reps: ex.reps,
+            completed: false
+          };
+        }
+      });
+      setSeriesData(newData);
     }
   }, [exercises]);
 
@@ -89,28 +104,29 @@ const StartWorkout = () => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const toggleExercise = (id) => {
-    setExerciseData(prev => ({
+  const toggleSeries = (key) => {
+    setSeriesData(prev => ({
       ...prev,
-      [id]: { ...prev[id], completed: !prev[id].completed }
+      [key]: { ...prev[key], completed: !prev[key].completed }
     }));
   };
 
-  const updateWeight = (id, weight) => {
-    setExerciseData(prev => ({
+  const updateWeight = (key, weight) => {
+    setSeriesData(prev => ({
       ...prev,
-      [id]: { ...prev[id], weight: parseInt(weight) || 0 }
+      [key]: { ...prev[key], weight: parseInt(weight) || 0 }
     }));
   };
 
-  const updateReps = (id, reps) => {
-    setExerciseData(prev => ({
+  const updateReps = (key, reps) => {
+    setSeriesData(prev => ({
       ...prev,
-      [id]: { ...prev[id], reps: parseInt(reps) || 0 }
+      [key]: { ...prev[key], reps: parseInt(reps) || 0 }
     }));
   };
 
-  const completedCount = Object.values(exerciseData).filter((ex: any) => ex.completed).length;
+  const totalSeries = Object.keys(seriesData).length;
+  const completedSeries = Object.values(seriesData).filter((series: any) => series.completed).length;
 
   // Timer effect
   useEffect(() => {
@@ -128,30 +144,42 @@ const StartWorkout = () => {
   }, [isActive, time]);
 
   const finishWorkout = async () => {
-    if (completedCount === 0) return;
+    if (completedSeries === 0) return;
     
     setIsActive(false);
     
     try {
       // Calcular total de peso levantado no treino
-      const totalWeight = Object.entries(exerciseData).reduce((total, [index, data]: [string, any]) => {
+      const totalWeight = Object.entries(seriesData).reduce((total, [key, data]: [string, any]) => {
         if (data.completed && data.weight && data.reps) {
-          const exercise = exercises[parseInt(index)];
-          return total + (data.weight * data.reps * exercise.sets);
+          return total + (data.weight * data.reps);
         }
         return total;
       }, 0);
 
-      // Atualizar registros de exercícios (recordes pessoais)
-      for (const [index, data] of Object.entries(exerciseData)) {
-        if ((data as any).completed && (data as any).weight && (data as any).reps) {
-          const exercise = exercises[parseInt(index)];
-          await supabase.rpc('update_exercise_record', {
-            p_exercise_name: exercise.exercise_name,
-            p_weight: (data as any).weight,
-            p_reps: (data as any).reps
-          });
+      // Atualizar registros de exercícios (recordes pessoais) - pegar o melhor de cada exercício
+      const exerciseRecords = {};
+      Object.entries(seriesData).forEach(([key, data]: [string, any]) => {
+        if (data.completed && data.weight && data.reps) {
+          const [exerciseIndex] = key.split('-');
+          const exercise = exercises[parseInt(exerciseIndex)];
+          const exerciseName = exercise.exercise_name;
+          
+          if (!exerciseRecords[exerciseName] || 
+              (data.weight > exerciseRecords[exerciseName].weight) ||
+              (data.weight === exerciseRecords[exerciseName].weight && data.reps > exerciseRecords[exerciseName].reps)) {
+            exerciseRecords[exerciseName] = { weight: data.weight, reps: data.reps };
+          }
         }
+      });
+
+      // Salvar recordes
+      for (const [exerciseName, record] of Object.entries(exerciseRecords)) {
+        await supabase.rpc('update_exercise_record', {
+          p_exercise_name: exerciseName,
+          p_weight: (record as any).weight,
+          p_reps: (record as any).reps
+        });
       }
 
       // Calcular nova sequência
@@ -178,7 +206,7 @@ const StartWorkout = () => {
       // Atualizar estatísticas
       await updateStats({
         total_workouts: (stats?.total_workouts || 0) + 1,
-        total_exercises: (stats?.total_exercises || 0) + completedCount,
+        total_exercises: (stats?.total_exercises || 0) + completedSeries,
         total_weight_lifted: (stats?.total_weight_lifted || 0) + totalWeight,
         current_streak: newStreak,
         longest_streak: Math.max(newStreak, stats?.longest_streak || 0),
@@ -187,7 +215,7 @@ const StartWorkout = () => {
 
       toast({
         title: "Treino Finalizado!",
-        description: `Parabéns! Você completou ${completedCount} exercícios em ${formatTime(time)}. ${totalWeight > 0 ? `Total: ${totalWeight}kg levantados!` : ''}`,
+        description: `Parabéns! Você completou ${completedSeries} séries em ${formatTime(time)}. ${totalWeight > 0 ? `Total: ${totalWeight}kg levantados!` : ''}`,
       });
       
       navigate('/');
@@ -195,7 +223,7 @@ const StartWorkout = () => {
       console.error('Erro ao salvar treino:', error);
       toast({
         title: "Treino Finalizado!",
-        description: `Parabéns! Você completou ${completedCount} exercícios em ${formatTime(time)}.`,
+        description: `Parabéns! Você completou ${completedSeries} séries em ${formatTime(time)}.`,
       });
       navigate('/');
     }
@@ -211,7 +239,7 @@ const StartWorkout = () => {
         <div className="text-center">
           <h1 className="text-xl font-bold">{currentWorkout?.name || "Treino"}</h1>
           <p className="text-sm text-muted-foreground">
-            {completedCount}/{exercises.length} concluídos
+            {completedSeries}/{totalSeries} séries concluídas
           </p>
         </div>
         <div className="w-10" />
@@ -242,70 +270,81 @@ const StartWorkout = () => {
         <div className="w-full bg-primary-foreground/20 rounded-full h-2">
           <div 
             className="bg-secondary h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(completedCount / exercises.length) * 100}%` }}
+            style={{ width: `${(completedSeries / totalSeries) * 100}%` }}
           />
         </div>
       </Card>
 
       {/* Exercise List */}
-      <div className="space-y-4">
-        {exercises.map((exercise, index) => (
-          <Card 
-            key={index}
-            className={`floating-card p-4 transition-all duration-300 ${
-              exerciseData[index]?.completed 
-                ? 'bg-secondary/10 border-secondary/30' 
-                : 'hover:scale-[1.02]'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => toggleExercise(index)}
-                  className={`w-6 h-6 rounded-full border-2 ${
-                    exerciseData[index]?.completed
-                      ? 'bg-secondary border-secondary text-secondary-foreground'
-                      : 'border-muted-foreground'
-                  }`}
-                >
-                  {exerciseData[index]?.completed && <Check size={12} />}
-                </Button>
-                <div>
-                  <h3 className={`font-semibold ${
-                    exerciseData[index]?.completed ? 'line-through text-muted-foreground' : ''
-                  }`}>
-                    {exercise.exercise_name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {exercise.sets} séries
-                  </p>
-                </div>
-              </div>
+      <div className="space-y-6">
+        {exercises.map((exercise, exerciseIndex) => (
+          <Card key={exerciseIndex} className="floating-card p-4">
+            <div className="mb-4">
+              <h3 className="font-semibold text-lg mb-1">{exercise.exercise_name}</h3>
+              <p className="text-sm text-muted-foreground">{exercise.sets} séries</p>
             </div>
+            
+            <div className="space-y-3">
+              {Array.from({ length: exercise.sets }, (_, setIndex) => {
+                const key = `${exerciseIndex}-${setIndex}`;
+                const seriesCompleted = seriesData[key]?.completed;
+                
+                return (
+                  <div 
+                    key={setIndex}
+                    className={`p-3 rounded-lg border transition-all duration-300 ${
+                      seriesCompleted 
+                        ? 'bg-secondary/10 border-secondary/30' 
+                        : 'bg-card border-border hover:border-primary/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => toggleSeries(key)}
+                          className={`w-6 h-6 rounded-full border-2 ${
+                            seriesCompleted
+                              ? 'bg-secondary border-secondary text-secondary-foreground'
+                              : 'border-muted-foreground'
+                          }`}
+                        >
+                          {seriesCompleted && <Check size={12} />}
+                        </Button>
+                        <span className={`font-medium ${
+                          seriesCompleted ? 'line-through text-muted-foreground' : ''
+                        }`}>
+                          Série {setIndex + 1}
+                        </span>
+                      </div>
+                    </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-muted-foreground">Peso (kg)</label>
-                <Input
-                  type="number"
-                  value={exerciseData[index]?.weight || ''}
-                  onChange={(e) => updateWeight(index, e.target.value)}
-                  className="mt-1"
-                  placeholder="0"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">Repetições</label>
-                <Input
-                  type="number"
-                  value={exerciseData[index]?.reps || ''}
-                  onChange={(e) => updateReps(index, e.target.value)}
-                  className="mt-1"
-                  placeholder="0"
-                />
-              </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Peso (kg)</label>
+                        <Input
+                          type="number"
+                          value={seriesData[key]?.weight || ''}
+                          onChange={(e) => updateWeight(key, e.target.value)}
+                          className="mt-1"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Repetições</label>
+                        <Input
+                          type="number"
+                          value={seriesData[key]?.reps || ''}
+                          onChange={(e) => updateReps(key, e.target.value)}
+                          className="mt-1"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </Card>
         ))}
@@ -317,11 +356,11 @@ const StartWorkout = () => {
           variant="secondary" 
           size="lg"
           className="w-full h-14"
-          disabled={completedCount === 0}
+          disabled={completedSeries === 0}
           onClick={finishWorkout}
         >
           <Check className="mr-2" size={20} />
-          Finalizar Treino ({completedCount}/{exercises.length})
+          Finalizar Treino ({completedSeries}/{totalSeries})
         </Button>
       </div>
     </div>

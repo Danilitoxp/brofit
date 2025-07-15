@@ -20,7 +20,7 @@ export const EXERCISE_CATEGORIES = [
   { id: 'cardio', name: 'Cardio' },
 ];
 
-export const PREDEFINED_EXERCISES: Exercise[] = [
+export let PREDEFINED_EXERCISES: Exercise[] = [
   // Peito
   { id: 'supino-reto', name: 'Supino Reto', category: 'chest', muscle_groups: ['Peitoral', 'Tríceps'] },
   { id: 'supino-inclinado', name: 'Supino Inclinado', category: 'chest', muscle_groups: ['Peitoral Superior', 'Tríceps'] },
@@ -70,6 +70,13 @@ export const PREDEFINED_EXERCISES: Exercise[] = [
   { id: 'bicicleta', name: 'Bicicleta Ergométrica', category: 'cardio', muscle_groups: ['Cardio'] },
   { id: 'eliptico', name: 'Elíptico', category: 'cardio', muscle_groups: ['Cardio'] },
 ];
+
+export const updatePredefinedExercise = (id: string, updates: Partial<Exercise>) => {
+  const index = PREDEFINED_EXERCISES.findIndex(ex => ex.id === id);
+  if (index !== -1) {
+    PREDEFINED_EXERCISES[index] = { ...PREDEFINED_EXERCISES[index], ...updates };
+  }
+};
 
 export const getExercisesByCategory = async (categoryId: string): Promise<Exercise[]> => {
   // Exercícios predefinidos

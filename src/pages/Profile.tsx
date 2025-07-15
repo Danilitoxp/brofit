@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Edit, Settings, Trophy, Target, Calendar, Scale, Ruler, User, Lock, Eye, EyeOff, Copy } from "lucide-react";
+import { Edit, Settings, Trophy, Target, Calendar, Scale, Ruler, User, Lock, Eye, EyeOff, Copy, Share2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -128,28 +128,59 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* ID para Amigos */}
+                  {/* Nickname e Compartilhamento */}
                   <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-sm text-primary mb-1">
-                          🆔 ID para Amigos
-                        </h3>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Compartilhe este ID para que amigos possam te encontrar
-                        </p>
-                        <code className="bg-muted px-2 py-1 rounded text-sm font-mono">
-                          {user?.id?.slice(0, 8)}...{user?.id?.slice(-4)}
-                        </code>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => {
-                      navigator.clipboard.writeText(user?.id || '');
-                      toast({
-                        title: "ID copiado!",
-                        description: "O ID foi copiado para a área de transferência."
-                      });
-                    }}>
-                        Copiar
+                    <div className="mb-3">
+                      <h3 className="font-semibold text-sm text-primary mb-1 flex items-center">
+                        <User size={14} className="mr-1" />
+                        {profile?.nickname ? `@${profile.nickname}` : 'Sem nickname'}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        {profile?.nickname ? 'Compartilhe seu nickname com amigos' : 'Configure um nickname para facilitar que amigos te encontrem'}
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1" 
+                        onClick={() => {
+                          const shareText = profile?.nickname 
+                            ? `Me adiciona no BroFit! Meu nickname é @${profile.nickname}` 
+                            : `Me adiciona no BroFit! Meu ID é ${user?.id}`;
+                          
+                          if (navigator.share) {
+                            navigator.share({
+                              title: 'BroFit - Adicione-me!',
+                              text: shareText
+                            });
+                          } else {
+                            navigator.clipboard.writeText(shareText);
+                            toast({
+                              title: "Link copiado!",
+                              description: "O link foi copiado para a área de transferência."
+                            });
+                          }
+                        }}
+                      >
+                        <Share2 size={14} className="mr-1" />
+                        Compartilhar
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const idText = profile?.nickname || user?.id;
+                          navigator.clipboard.writeText(idText || '');
+                          toast({
+                            title: "Copiado!",
+                            description: `${profile?.nickname ? 'Nickname' : 'ID'} copiado para a área de transferência.`
+                          });
+                        }}
+                      >
+                        <Copy size={14} />
                       </Button>
                     </div>
                   </div>
