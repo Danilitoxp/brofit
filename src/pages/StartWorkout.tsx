@@ -28,7 +28,14 @@ const StartWorkout = () => {
     
     // Se não tem workout no state, buscar treino de hoje
     const today = new Date().getDay(); // 0 = domingo, 1 = segunda, etc.
-    return workouts.find(w => w.day_of_week === today) || null;
+    const todayWorkout = workouts.find(w => w.day_of_week === today);
+    
+    // Se não encontrou treino de hoje, retornar o primeiro treino disponível
+    if (!todayWorkout && workouts.length > 0) {
+      return workouts[0];
+    }
+    
+    return todayWorkout || null;
   };
 
   const currentWorkout = getWorkout();
@@ -55,10 +62,20 @@ const StartWorkout = () => {
 
   // Redirecionar se não há treino
   useEffect(() => {
-    if (!currentWorkout || exercises.length === 0) {
+    if (!currentWorkout) {
       toast({
         title: "Nenhum treino encontrado",
         description: "Crie um treino primeiro para começar.",
+        variant: "destructive"
+      });
+      navigate('/workouts');
+      return;
+    }
+    
+    if (!exercises || exercises.length === 0) {
+      toast({
+        title: "Treino sem exercícios",
+        description: "Adicione exercícios ao treino para poder iniciá-lo.",
         variant: "destructive"
       });
       navigate('/workouts');

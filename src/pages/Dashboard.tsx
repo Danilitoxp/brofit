@@ -125,7 +125,17 @@ const Dashboard = () => {
           onClick={() => {
             if (todayWorkout.exercises > 0) {
               const workout = workouts.find(w => w.day_of_week === currentDate.getDay());
-              navigate('/start-workout', { state: { workout } });
+              if (workout && workout.exercises.length > 0) {
+                navigate('/start-workout', { state: { workout } });
+              } else {
+                // Se não tem treino específico para hoje, usar qualquer treino disponível
+                const availableWorkout = workouts.find(w => w.exercises && w.exercises.length > 0);
+                if (availableWorkout) {
+                  navigate('/start-workout', { state: { workout: availableWorkout } });
+                } else {
+                  navigate('/workouts');
+                }
+              }
             } else {
               navigate('/workouts');
             }
