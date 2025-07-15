@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useAdmin } from "@/hooks/useAdmin";
-import { EXERCISE_CATEGORIES } from "@/data/exercises";
+import { EXERCISE_CATEGORIES, PREDEFINED_EXERCISES, getAllExercises, Exercise } from "@/data/exercises";
 import { Plus, Edit, Trash2, Upload, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +25,7 @@ const MUSCLE_GROUPS = [
 const Exercises = () => {
   const { customExercises, loading, createExercise, updateExercise, deactivateExercise, uploadExerciseImage } = useAdmin();
   const { toast } = useToast();
+  const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   
   const [showForm, setShowForm] = useState(false);
   const [editingExercise, setEditingExercise] = useState<any>(null);
@@ -38,6 +39,35 @@ const Exercises = () => {
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Buscar todos os exercícios (predefinidos + customizados)
+  const fetchAllExercises = async () => {
+    const exercises = await getAllExercises();
+    setAllExercises(exercises);
+  };
+
+  // Atualizar lista após operações
+  const handleCreateSuccess = async (exerciseData: any) => {
+    await createExercise(exerciseData);
+    await fetchAllExercises();
+  };
+
+  const handleUpdateSuccess = async (id: string, exerciseData: any) => {
+    await updateExercise(id, exerciseData);
+    await fetchAllExercises();
+  };
+
+  const handleDeactivateSuccess = async (id: string) => {
+    await deactivateExercise(id);
+    await fetchAllExercises();
+  };
+
+  // Carregar exercícios quando componente monta
+  React.useEffect(() => {
+    if (!loading) {
+      fetchAllExercises();
+    }
+  }, [loading, customExercises]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,9 +98,9 @@ const Exercises = () => {
     };
 
     if (editingExercise) {
-      await updateExercise(editingExercise.id, exerciseData);
+      await handleUpdateSuccess(editingExercise.id, exerciseData);
     } else {
-      await createExercise(exerciseData);
+      await handleCreateSuccess(exerciseData);
     }
 
     resetForm();
@@ -296,7 +326,7 @@ const Exercises = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {customExercises.map((exercise) => (
+        {allExercises.map((exercise) => (
           <Card key={exercise.id} className="overflow-hidden">
             {exercise.image_url && (
               <div className="aspect-video">
@@ -318,17 +348,25 @@ const Exercises = () => {
                 </div>
                 
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(exercise)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => deactivateExercise(exercise.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {exercise.is_custom ? (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(exercise)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDeactivateSuccess(exercise.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">
+                      Exercício padrão
+                    </div>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -360,7 +398,7 @@ const Exercises = () => {
         ))}
       </div>
 
-      {customExercises.length === 0 && (
+      {allExercises.length === 0 && (
         <div className="text-center py-12">
           <p className="text-muted-foreground mb-4">
             Nenhum exercício personalizado criado ainda.

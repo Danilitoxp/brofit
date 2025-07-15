@@ -255,17 +255,18 @@ export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutF
                           />
                         </div>
 
-                        <div>
-                          <Label className="text-xs">Peso (kg)</Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.5"
-                            value={set.weight}
-                            onChange={(e) => updateSet(exerciseIndex, setIndex, 'weight', parseFloat(e.target.value) || 0)}
-                            className="h-8"
-                          />
-                        </div>
+                         <div>
+                           <Label className="text-xs">Peso (kg)</Label>
+                           <Input
+                             type="number"
+                             min="0"
+                             step="0.5"
+                             value={set.weight || ''}
+                             onChange={(e) => updateSet(exerciseIndex, setIndex, 'weight', parseFloat(e.target.value) || 0)}
+                             className="h-8"
+                             placeholder="0"
+                           />
+                         </div>
 
                         <div className="text-center">
                           {exercise.sets.length > 1 && (
