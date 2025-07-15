@@ -1,9 +1,13 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export interface Exercise {
   id: string;
   name: string;
   category: string;
   muscle_groups: string[];
   description?: string;
+  image_url?: string;
+  is_custom?: boolean;
 }
 
 export const EXERCISE_CATEGORIES = [
@@ -67,10 +71,69 @@ export const PREDEFINED_EXERCISES: Exercise[] = [
   { id: 'eliptico', name: 'Elíptico', category: 'cardio', muscle_groups: ['Cardio'] },
 ];
 
-export const getExercisesByCategory = (categoryId: string): Exercise[] => {
-  return PREDEFINED_EXERCISES.filter(exercise => exercise.category === categoryId);
+export const getExercisesByCategory = async (categoryId: string): Promise<Exercise[]> => {
+  // Exercícios predefinidos
+  const predefined = PREDEFINED_EXERCISES.filter(exercise => exercise.category === categoryId);
+  
+  // Exercícios customizados do banco
+  try {
+    const { data: customExercises, error } = await supabase
+      .from('custom_exercises')
+      .select('*')
+      .eq('category', categoryId)
+      .eq('is_active', true);
+    
+    if (error) {
+      console.error('Erro ao buscar exercícios customizados:', error);
+      return predefined;
+    }
+    
+    const custom: Exercise[] = customExercises?.map(ex => ({
+      id: ex.id,
+      name: ex.name,
+      category: ex.category,
+      muscle_groups: ex.muscle_groups,
+      description: ex.description,
+      image_url: ex.image_url,
+      is_custom: true
+    })) || [];
+    
+    return [...predefined, ...custom];
+  } catch (error) {
+    console.error('Erro ao buscar exercícios customizados:', error);
+    return predefined;
+  }
 };
 
-export const getAllExercises = (): Exercise[] => {
-  return PREDEFINED_EXERCISES;
+export const getAllExercises = async (): Promise<Exercise[]> => {
+  // Exercícios predefinidos
+  const predefined = PREDEFINED_EXERCISES;
+  
+  // Exercícios customizados do banco
+  try {
+    const { data: customExercises, error } = await supabase
+      .from('custom_exercises')
+      .select('*')
+      .eq('is_active', true);
+    
+    if (error) {
+      console.error('Erro ao buscar exercícios customizados:', error);
+      return predefined;
+    }
+    
+    const custom: Exercise[] = customExercises?.map(ex => ({
+      id: ex.id,
+      name: ex.name,
+      category: ex.category,
+      muscle_groups: ex.muscle_groups,
+      description: ex.description,
+      image_url: ex.image_url,
+      is_custom: true
+    })) || [];
+    
+    return [...predefined, ...custom];
+  } catch (error) {
+    console.error('Erro ao buscar exercícios customizados:', error);
+    return predefined;
+  }
 };

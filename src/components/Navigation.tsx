@@ -1,11 +1,13 @@
-import { Home, Dumbbell, Trophy, User, Users, LogOut } from "lucide-react";
+import { Home, Dumbbell, Trophy, User, Users, LogOut, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
   const { signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   const handleLogout = async () => {
     await signOut();
@@ -17,6 +19,7 @@ const Navigation = () => {
     { href: "/ranking", icon: Trophy, label: "Ranking" },
     { href: "/friends", icon: Users, label: "Amigos" },
     { href: "/profile", icon: User, label: "Perfil" },
+    ...(isAdmin ? [{ href: "/exercises", icon: Settings, label: "Exercícios" }] : []),
   ];
 
   return (

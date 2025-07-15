@@ -32,6 +32,7 @@ const EXPERIENCE_LEVELS = [
 export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoading }: ProfileFormProps) => {
   const [formData, setFormData] = useState<Partial<Profile>>({
     display_name: profile?.display_name || "",
+    nickname: profile?.nickname || "",
     bio: profile?.bio || "",
     height: profile?.height || undefined,
     weight: profile?.weight || undefined,
@@ -160,25 +161,40 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
             />
           </div>
 
-          {/* Nível de experiência */}
+          {/* Nickname */}
           <div className="space-y-2">
-            <Label>Nível de experiência</Label>
-            <Select 
-              value={formData.experience_level || ""} 
-              onValueChange={(value) => handleInputChange('experience_level', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione seu nível" />
-              </SelectTrigger>
-              <SelectContent>
-                {EXPERIENCE_LEVELS.map((level) => (
-                  <SelectItem key={level.value} value={level.value}>
-                    {level.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="nickname">Nickname *</Label>
+            <Input
+              id="nickname"
+              value={formData.nickname || ""}
+              onChange={(e) => handleInputChange('nickname', e.target.value)}
+              placeholder="Ex: danilitoxp"
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              Usado para busca de amigos. Apenas letras, números e underscore.
+            </p>
           </div>
+        </div>
+
+        {/* Nível de experiência */}
+        <div className="space-y-2">
+          <Label>Nível de experiência</Label>
+          <Select 
+            value={formData.experience_level || ""} 
+            onValueChange={(value) => handleInputChange('experience_level', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione seu nível" />
+            </SelectTrigger>
+            <SelectContent>
+              {EXPERIENCE_LEVELS.map((level) => (
+                <SelectItem key={level.value} value={level.value}>
+                  {level.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Bio */}

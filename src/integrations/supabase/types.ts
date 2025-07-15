@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_exercises: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          muscle_groups: string[]
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          muscle_groups?: string[]
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          muscle_groups?: string[]
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exercise_records: {
         Row: {
           achieved_at: string
@@ -119,6 +158,8 @@ export type Database = {
           height: number | null
           id: string
           is_public: boolean | null
+          nickname: string | null
+          role: string | null
           updated_at: string
           user_id: string
           weight: number | null
@@ -134,6 +175,8 @@ export type Database = {
           height?: number | null
           id?: string
           is_public?: boolean | null
+          nickname?: string | null
+          role?: string | null
           updated_at?: string
           user_id: string
           weight?: number | null
@@ -149,6 +192,8 @@ export type Database = {
           height?: number | null
           id?: string
           is_public?: boolean | null
+          nickname?: string | null
+          role?: string | null
           updated_at?: string
           user_id?: string
           weight?: number | null
@@ -273,6 +318,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_admin: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
       update_exercise_record: {
         Args: { p_exercise_name: string; p_weight: number; p_reps: number }
         Returns: undefined

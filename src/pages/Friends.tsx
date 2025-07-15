@@ -185,7 +185,10 @@ const Friends = () => {
 
         <div className="flex-1">
           <h3 className="font-semibold">{user.display_name}</h3>
-          <div className="flex items-center gap-2">
+          {user.nickname && (
+            <p className="text-sm text-primary font-medium">@{user.nickname}</p>
+          )}
+          <div className="flex items-center gap-2 mt-1">
             {user.experience_level && (
               <Badge variant="outline" className="text-xs">
                 {getExperienceLabel(user.experience_level)}
@@ -268,7 +271,7 @@ const Friends = () => {
             <div className="flex items-center gap-4">
               <Search size={20} className="text-muted-foreground" />
               <Input
-                placeholder="Buscar usuários por nome..."
+                placeholder="Buscar usuários por nome ou nickname..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="flex-1"

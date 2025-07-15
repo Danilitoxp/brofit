@@ -15,6 +15,7 @@ import Progress from "./pages/Progress";
 import Ranking from "./pages/Ranking";
 import Friends from "./pages/Friends";
 import Profile from "./pages/Profile";
+import Exercises from "./pages/Exercises";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="ranking" element={<Ranking />} />
               <Route path="friends" element={<Friends />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="exercises" element={<Exercises />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

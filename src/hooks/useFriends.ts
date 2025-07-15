@@ -28,6 +28,7 @@ export interface FriendRequest {
 export interface UserSearchResult {
   user_id: string;
   display_name: string;
+  nickname?: string;
   avatar_url?: string;
   bio?: string;
   experience_level?: string;
@@ -67,7 +68,7 @@ export const useFriends = () => {
       // Get profiles for all users
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, display_name, avatar_url, bio, experience_level')
+        .select('user_id, display_name, nickname, avatar_url, bio, experience_level')
         .in('user_id', allUserIds);
 
       const friendsList: Friend[] = [];
@@ -124,10 +125,10 @@ export const useFriends = () => {
     try {
       const { data: usersData, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, avatar_url, bio, experience_level, is_public')
+        .select('user_id, display_name, nickname, avatar_url, bio, experience_level, is_public')
         .neq('user_id', user.id)
         .eq('is_public', true)
-        .ilike('display_name', `%${query}%`)
+        .or(`nickname.ilike.%${query}%,display_name.ilike.%${query}%`)
         .limit(10);
 
       if (error) throw error;
@@ -148,6 +149,7 @@ export const useFriends = () => {
         return {
           user_id: userData.user_id,
           display_name: userData.display_name,
+          nickname: userData.nickname,
           avatar_url: userData.avatar_url,
           bio: userData.bio,
           experience_level: userData.experience_level,

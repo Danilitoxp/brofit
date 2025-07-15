@@ -7,6 +7,7 @@ export interface Profile {
   id?: string;
   user_id: string;
   display_name?: string;
+  nickname?: string;
   bio?: string;
   avatar_url?: string;
   birth_date?: string;
@@ -15,6 +16,7 @@ export interface Profile {
   fitness_goal?: string;
   experience_level?: 'beginner' | 'intermediate' | 'advanced';
   is_public?: boolean;
+  role?: 'user' | 'admin';
 }
 
 export interface WorkoutStats {
