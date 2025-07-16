@@ -9,6 +9,7 @@ import { useWorkouts } from "@/hooks/useWorkouts";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { RestTimer } from "@/components/RestTimer";
 
 const StartWorkout = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const StartWorkout = () => {
   const { user } = useAuth();
   const [isActive, setIsActive] = useState(false);
   const [time, setTime] = useState(0);
+  const [showRestTimer, setShowRestTimer] = useState(false);
+  const [lastCompletedSeries, setLastCompletedSeries] = useState<string | null>(null);
 
   // Buscar o treino - pode vir do state ou buscar o treino de hoje
   const getWorkout = () => {
@@ -105,10 +108,18 @@ const StartWorkout = () => {
   };
 
   const toggleSeries = (key) => {
+    const wasCompleted = seriesData[key]?.completed;
+    
     setSeriesData(prev => ({
       ...prev,
       [key]: { ...prev[key], completed: !prev[key].completed }
     }));
+
+    // Se estava incompleto e agora está completo, mostrar timer de descanso
+    if (!wasCompleted) {
+      setLastCompletedSeries(key);
+      setShowRestTimer(true);
+    }
   };
 
   const updateWeight = (key, weight) => {
@@ -211,6 +222,25 @@ const StartWorkout = () => {
         current_streak: newStreak,
         longest_streak: Math.max(newStreak, stats?.longest_streak || 0),
         last_workout_date: today
+      });
+
+      // Verificar conquistas
+      await supabase.rpc('check_and_grant_achievements', {
+        p_user_id: user?.id
+      });
+
+      // Adicionar atividade ao feed
+      await supabase.from('activity_feed').insert({
+        user_id: user?.id,
+        type: 'workout_completed',
+        title: 'Treino Concluído!',
+        description: `${completedSeries} séries completas em ${formatTime(time)}`,
+        data: {
+          workout_name: currentWorkout?.name,
+          series_completed: completedSeries,
+          total_weight: totalWeight,
+          duration: time
+        }
       });
 
       toast({
@@ -363,6 +393,14 @@ const StartWorkout = () => {
           Finalizar Treino ({completedSeries}/{totalSeries})
         </Button>
       </div>
+
+      {/* Rest Timer */}
+      <RestTimer
+        isVisible={showRestTimer}
+        onClose={() => setShowRestTimer(false)}
+        onComplete={() => setShowRestTimer(false)}
+        duration={90} // 1.5 minutos
+      />
     </div>
   );
 };

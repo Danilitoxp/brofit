@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useProfile } from "@/hooks/useProfile";
+import { AchievementsWidget } from "@/components/AchievementsWidget";
+import { ActivityFeed } from "@/components/ActivityFeed";
+import { ProgressCharts } from "@/components/ProgressCharts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -182,6 +185,15 @@ const Dashboard = () => {
           <p className="text-muted-foreground text-sm">Recorde</p>
         </div>
       </div>
+
+      {/* Conquistas Widget */}
+      <AchievementsWidget />
+
+      {/* Progress Charts */}
+      <ProgressCharts />
+
+      {/* Activity Feed */}
+      <ActivityFeed />
 
       {/* Quick Actions */}
       <div className="space-y-3">

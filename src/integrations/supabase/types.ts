@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      activity_feed: {
+        Row: {
+          created_at: string
+          data: Json | null
+          description: string
+          id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          description: string
+          id?: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          description?: string
+          id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       custom_exercises: {
         Row: {
           category: string
@@ -230,6 +296,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          created_at: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_exercises: {
         Row: {
           created_at: string
@@ -348,6 +446,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_grant_achievements: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       is_admin: {
         Args: { user_id?: string }
         Returns: boolean
