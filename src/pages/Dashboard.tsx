@@ -152,53 +152,14 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      {/* Weekly Stats Grid */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="stat-card">
-          <div className="flex items-center justify-center mb-2">
-            <Target className="text-secondary" size={24} />
-          </div>
-          <p className="text-2xl font-bold text-secondary">
-            {stats?.total_workouts || 0}
-          </p>
-          <p className="text-muted-foreground text-sm">Total Treinos</p>
-        </div>
-
-        <div className="stat-card">
-          <div className="flex items-center justify-center mb-2">
-            <TrendingUp className="text-accent" size={24} />
-          </div>
-          <p className="text-2xl font-bold text-accent">
-            {stats?.total_exercises || 0}
-          </p>
-          <p className="text-muted-foreground text-sm">Exercícios</p>
-        </div>
-
-
-        <div className="stat-card">
-          <div className="flex items-center justify-center mb-2">
-            <Flame className="text-destructive" size={24} />
-          </div>
-          <p className="text-2xl font-bold text-destructive">
-            {stats?.longest_streak || 0}
-          </p>
-          <p className="text-muted-foreground text-sm">Recorde</p>
-        </div>
-      </div>
-
       {/* Conquistas Widget */}
       <AchievementsWidget />
-
-      {/* Progress Charts */}
-      <ProgressCharts />
 
       {/* Activity Feed */}
       <ActivityFeed />
 
-      {/* Quick Actions */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold mb-3">Ações Rápidas</h3>
-        
+      {/* Ver Evolução Button */}
+      <div className="mb-6">
         <Button 
           variant="outline" 
           className="w-full justify-start h-14"
@@ -207,14 +168,6 @@ const Dashboard = () => {
           <TrendingUp className="mr-3" size={20} />
           Ver Evolução
         </Button>
-      </div>
-
-      {/* Motivation Quote */}
-      <div className="mt-8 p-6 bg-gradient-accent rounded-2xl text-center">
-        <p className="text-accent-foreground font-medium text-lg italic">
-          "A diferença entre o impossível e o possível está na determinação."
-        </p>
-        <p className="text-accent-foreground/80 text-sm mt-2">— Muhammad Ali</p>
       </div>
     </div>
   );

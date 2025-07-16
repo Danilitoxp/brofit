@@ -14,6 +14,7 @@ import QuickWorkout from "./pages/QuickWorkout";
 import Progress from "./pages/Progress";
 import Ranking from "./pages/Ranking";
 import Friends from "./pages/Friends";
+import FriendProfile from "./pages/FriendProfile";
 import Profile from "./pages/Profile";
 import Exercises from "./pages/Exercises";
 import Auth from "./pages/Auth";
@@ -38,6 +39,11 @@ const App = () => (
             <Route path="/quick-workout" element={
               <ProtectedRoute>
                 <QuickWorkout />
+              </ProtectedRoute>
+            } />
+            <Route path="/friend/:userId" element={
+              <ProtectedRoute>
+                <FriendProfile />
               </ProtectedRoute>
             } />
             <Route path="/" element={

@@ -101,10 +101,13 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
   return (
     <Card className="floating-card p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Upload de Avatar */}
+          {/* Upload de Avatar */}
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="w-24 h-24">
-            <AvatarImage src={formData.avatar_url} />
+            <AvatarImage 
+              src={formData.avatar_url} 
+              className="object-cover object-center"
+            />
             <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
               {getInitials(formData.display_name)}
             </AvatarFallback>

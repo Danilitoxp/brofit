@@ -103,9 +103,9 @@ const Ranking = () => {
                 </AvatarFallback>
               </Avatar>
 
-              <div className="flex-1">
-                <h3 className="font-semibold">{entry.display_name}</h3>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold truncate">{entry.display_name}</h3>
+                <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
                   {showTotalScore ? (
                     <span>Total: {entry.total_score?.toFixed(1) || 0}kg</span>
                   ) : (
@@ -195,22 +195,46 @@ const Ranking = () => {
         </Card>
 
         {/* Tabs de Rankings */}
-        <Tabs defaultValue="global" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="global" className="flex items-center gap-2">
-              <Trophy size={16} />
-              Ranking por Exercício
+        <Tabs defaultValue="general" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="general" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Crown size={14} />
+              <span className="hidden sm:inline">Geral</span>
             </TabsTrigger>
-            <TabsTrigger value="friends" className="flex items-center gap-2">
-              <Users size={16} />
-              Amigos
+            <TabsTrigger value="exercise" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Trophy size={14} />
+              <span className="hidden sm:inline">Por Exercício</span>
+            </TabsTrigger>
+            <TabsTrigger value="friends" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Users size={14} />
+              <span className="hidden sm:inline">Amigos</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="global" className="mt-6">
+          <TabsContent value="general" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  Ranking Geral
+                </h2>
+                {loadingRanking && (
+                  <div className="animate-pulse text-sm text-muted-foreground">
+                    Carregando...
+                  </div>
+                )}
+              </div>
+
+              <RankingList 
+                data={exerciseRanking} 
+                showTotalScore={true}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="exercise" className="mt-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg sm:text-xl font-semibold">
                   {selectedExercise ? `Ranking - ${selectedExercise}` : "Selecione um exercício"}
                 </h2>
                 {loadingRanking && (
@@ -230,7 +254,7 @@ const Ranking = () => {
           <TabsContent value="friends" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-lg sm:text-xl font-semibold">
                   {selectedExercise ? `Amigos - ${selectedExercise}` : "Ranking dos Amigos"}
                 </h2>
                 {loadingRanking && (
@@ -247,7 +271,7 @@ const Ranking = () => {
                   <p className="text-muted-foreground mb-4">
                     Adicione amigos para ver como vocês se comparam!
                   </p>
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => window.location.href = '/friends'}>
                     <Target className="mr-2" size={16} />
                     Encontrar Amigos
                   </Button>
