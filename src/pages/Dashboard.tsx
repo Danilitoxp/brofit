@@ -7,27 +7,29 @@ import { useProfile } from "@/hooks/useProfile";
 import { AchievementsWidget } from "@/components/AchievementsWidget";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { ProgressCharts } from "@/components/ProgressCharts";
-
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { workouts } = useWorkouts();
-  const { stats } = useProfile();
+  const {
+    workouts
+  } = useWorkouts();
+  const {
+    stats
+  } = useProfile();
   const [currentDate] = useState(new Date());
 
   // Determinar treino de hoje baseado no dia da semana
   const getTodayWorkout = () => {
     const today = currentDate.getDay(); // 0 = domingo, 1 = segunda, etc.
     const todayWorkout = workouts.find(w => w.day_of_week === today);
-    
     if (todayWorkout) {
       return {
         name: todayWorkout.name,
         exercises: todayWorkout.exercises.length,
-        estimatedTime: todayWorkout.exercises.length * 12, // ~12min por exercício
+        estimatedTime: todayWorkout.exercises.length * 12,
+        // ~12min por exercício
         completed: false
       };
     }
-    
     return {
       name: "Nenhum treino programado",
       exercises: 0,
@@ -35,29 +37,25 @@ const Dashboard = () => {
       completed: false
     };
   };
-
   const todayWorkout = getTodayWorkout();
-
   const getWelcomeMessage = () => {
     const hour = currentDate.getHours();
     if (hour < 12) return "Bom dia";
     if (hour < 18) return "Boa tarde";
     return "Boa noite";
   };
-
   const getDayOfWeek = () => {
-    return currentDate.toLocaleDateString('pt-BR', { weekday: 'long' });
-  };
-
-  const formatDate = () => {
-    return currentDate.toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: 'long' 
+    return currentDate.toLocaleDateString('pt-BR', {
+      weekday: 'long'
     });
   };
-
-  return (
-    <div className="min-h-screen bg-background px-4 pt-6">
+  const formatDate = () => {
+    return currentDate.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long'
+    });
+  };
+  return <div className="min-h-screen bg-background px-4 pt-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
@@ -74,15 +72,10 @@ const Dashboard = () => {
               <Flame className="text-accent" size={20} />
               <span className="font-bold text-lg">{stats?.current_streak || 0}</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-muted-foreground"
-              onClick={() => {
-                localStorage.removeItem("brofit_user");
-                navigate("/auth");
-              }}
-            >
+            <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => {
+            localStorage.removeItem("brofit_user");
+            navigate("/auth");
+          }}>
               <LogOut size={20} />
             </Button>
           </div>
@@ -121,34 +114,33 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <Button 
-          variant="glass" 
-          size="lg" 
-          className="w-full text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/10"
-          onClick={() => {
-            if (todayWorkout.exercises > 0) {
-              const workout = workouts.find(w => w.day_of_week === currentDate.getDay());
-              if (workout && workout.exercises.length > 0) {
-                navigate('/start-workout', { state: { workout } });
-              } else {
-                // Se não tem treino específico para hoje, usar qualquer treino disponível
-                const availableWorkout = workouts.find(w => w.exercises && w.exercises.length > 0);
-                if (availableWorkout) {
-                  navigate('/start-workout', { state: { workout: availableWorkout } });
-                } else {
-                  navigate('/workouts');
-                }
+        <Button variant="glass" size="lg" className="w-full text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/10" onClick={() => {
+        if (todayWorkout.exercises > 0) {
+          const workout = workouts.find(w => w.day_of_week === currentDate.getDay());
+          if (workout && workout.exercises.length > 0) {
+            navigate('/start-workout', {
+              state: {
+                workout
               }
+            });
+          } else {
+            // Se não tem treino específico para hoje, usar qualquer treino disponível
+            const availableWorkout = workouts.find(w => w.exercises && w.exercises.length > 0);
+            if (availableWorkout) {
+              navigate('/start-workout', {
+                state: {
+                  workout: availableWorkout
+                }
+              });
             } else {
               navigate('/workouts');
             }
-          }}
-          disabled={todayWorkout.exercises === 0}
-        >
-          {todayWorkout.exercises > 0 ? 
-            (todayWorkout.completed ? "✅ Treino Concluído" : "🔥 Iniciar Treino") :
-            "📝 Criar Treino"
           }
+        } else {
+          navigate('/workouts');
+        }
+      }} disabled={todayWorkout.exercises === 0}>
+          {todayWorkout.exercises > 0 ? todayWorkout.completed ? "✅ Treino Concluído" : "🔥 Iniciar Treino" : "📝 Criar Treino"}
         </Button>
       </div>
 
@@ -199,25 +191,14 @@ const Dashboard = () => {
       <div className="space-y-3">
         <h3 className="text-lg font-semibold mb-3">Ações Rápidas</h3>
         
-        <Button 
-          variant="outline" 
-          className="w-full justify-start h-14"
-          onClick={() => navigate('/progress')}
-        >
+        <Button variant="outline" className="w-full justify-start h-14" onClick={() => navigate('/progress')}>
           <TrendingUp className="mr-3" size={20} />
           Ver Evolução
         </Button>
       </div>
 
       {/* Motivation Quote */}
-      <div className="mt-8 p-6 bg-gradient-accent rounded-2xl text-center">
-        <p className="text-accent-foreground font-medium text-lg italic">
-          "A diferença entre o impossível e o possível está na determinação."
-        </p>
-        <p className="text-accent-foreground/80 text-sm mt-2">— Muhammad Ali</p>
-      </div>
-    </div>
-  );
+      
+    </div>;
 };
-
 export default Dashboard;

@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Trophy, Dumbbell, Target, Star, Users } from 'lucide-react';
-
 interface Activity {
   id: string;
   user_id: string;
@@ -19,33 +18,31 @@ interface Activity {
     avatar_url?: string;
   };
 }
-
 export const ActivityFeed = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
-
+  const {
+    user
+  } = useAuth();
   useEffect(() => {
     if (!user) return;
-
     const fetchActivities = async () => {
       try {
         // Buscar atividades com dados de perfil separadamente
-        const { data: activitiesData, error: activitiesError } = await supabase
-          .from('activity_feed')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(10);
-
+        const {
+          data: activitiesData,
+          error: activitiesError
+        } = await supabase.from('activity_feed').select('*').order('created_at', {
+          ascending: false
+        }).limit(10);
         if (activitiesError) throw activitiesError;
 
         // Buscar dados dos perfis dos usuários
         const userIds = [...new Set(activitiesData?.map(a => a.user_id) || [])];
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url')
-          .in('user_id', userIds);
-
+        const {
+          data: profilesData,
+          error: profilesError
+        } = await supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds);
         if (profilesError) throw profilesError;
 
         // Combinar dados
@@ -59,7 +56,6 @@ export const ActivityFeed = () => {
             }
           };
         }) || [];
-
         setActivities(transformedData);
       } catch (error) {
         console.error('Error fetching activities:', error);
@@ -67,30 +63,20 @@ export const ActivityFeed = () => {
         setLoading(false);
       }
     };
-
     fetchActivities();
 
     // Configurar realtime para atualizações
-    const subscription = supabase
-      .channel('activity_feed_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'activity_feed'
-        },
-        () => {
-          fetchActivities(); // Recarregar quando houver nova atividade
-        }
-      )
-      .subscribe();
-
+    const subscription = supabase.channel('activity_feed_changes').on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'activity_feed'
+    }, () => {
+      fetchActivities(); // Recarregar quando houver nova atividade
+    }).subscribe();
     return () => {
       subscription.unsubscribe();
     };
   }, [user]);
-
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'workout_completed':
@@ -105,7 +91,6 @@ export const ActivityFeed = () => {
         return <Users className="text-muted-foreground" size={16} />;
     }
   };
-
   const getActivityColor = (type: string) => {
     switch (type) {
       case 'workout_completed':
@@ -120,28 +105,20 @@ export const ActivityFeed = () => {
         return 'border-l-muted-foreground bg-muted/5';
     }
   };
-
   if (loading) {
-    return (
-      <Card className="floating-card p-4">
+    return <Card className="floating-card p-4">
         <h3 className="font-semibold text-lg mb-4">Feed de Atividades</h3>
         <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse">
+          {[...Array(3)].map((_, i) => <div key={i} className="animate-pulse">
               <div className="h-16 bg-muted rounded-lg"></div>
-            </div>
-          ))}
+            </div>)}
         </div>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <Card className="floating-card p-4">
+  return <Card className="floating-card p-4 mx-0 my-[20px]">
       <h3 className="font-semibold text-lg mb-4">Feed de Atividades</h3>
       
-      {activities.length === 0 ? (
-        <div className="text-center py-8">
+      {activities.length === 0 ? <div className="text-center py-8">
           <Users className="mx-auto text-muted-foreground mb-2" size={32} />
           <p className="text-muted-foreground text-sm">
             Nenhuma atividade recente
@@ -149,14 +126,8 @@ export const ActivityFeed = () => {
           <p className="text-muted-foreground/70 text-xs mt-1">
             Complete treinos e adicione amigos para ver atividades aqui
           </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {activities.map((activity) => (
-            <div
-              key={activity.id}
-              className={`p-3 rounded-lg border-l-4 ${getActivityColor(activity.type)}`}
-            >
+        </div> : <div className="space-y-3">
+          {activities.map(activity => <div key={activity.id} className={`p-3 rounded-lg border-l-4 ${getActivityColor(activity.type)}`}>
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 mt-0.5">
                   {getActivityIcon(activity.type)}
@@ -169,9 +140,9 @@ export const ActivityFeed = () => {
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(activity.created_at), {
-                        addSuffix: true,
-                        locale: ptBR
-                      })}
+                  addSuffix: true,
+                  locale: ptBR
+                })}
                     </span>
                   </div>
                   
@@ -183,17 +154,12 @@ export const ActivityFeed = () => {
                     {activity.description}
                   </p>
                   
-                  {activity.data?.icon && (
-                    <span className="text-lg mt-1 inline-block">
+                  {activity.data?.icon && <span className="text-lg mt-1 inline-block">
                       {activity.data.icon}
-                    </span>
-                  )}
+                    </span>}
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </Card>
-  );
+            </div>)}
+        </div>}
+    </Card>;
 };
