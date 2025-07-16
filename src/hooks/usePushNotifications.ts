@@ -44,6 +44,18 @@ export const usePushNotifications = () => {
       // Check if already subscribed
       const existingSubscription = await registration.pushManager.getSubscription();
       if (existingSubscription) {
+        // Update existing subscription in database
+        const subscriptionObj = existingSubscription.toJSON();
+        await supabase
+          .from('push_subscriptions')
+          .upsert({
+            user_id: user.id,
+            endpoint: subscriptionObj.endpoint || '',
+            p256dh: subscriptionObj.keys?.p256dh || '',
+            auth: subscriptionObj.keys?.auth || ''
+          }, {
+            onConflict: 'user_id,endpoint'
+          });
         return;
       }
 
@@ -53,11 +65,25 @@ export const usePushNotifications = () => {
         applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa40HI80NmIjDSGj3E9MIpjB2g1hWNkLtNqWlE6Ox0RZ7EfQYQg9Zm4EBJ9V3Y') // VAPID public key
       });
 
-      // Save subscription to database (you'll need to create this table)
-      // await supabase.from('push_subscriptions').insert({
-      //   user_id: user.id,
-      //   subscription: subscription.toJSON()
-      // });
+      // Save subscription to database
+      const subscriptionObj = subscription.toJSON();
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .upsert({
+          user_id: user.id,
+          endpoint: subscriptionObj.endpoint || '',
+          p256dh: subscriptionObj.keys?.p256dh || '',
+          auth: subscriptionObj.keys?.auth || ''
+        }, {
+          onConflict: 'user_id,endpoint'
+        });
+
+      if (error) {
+        console.error('Error saving subscription:', error);
+        throw error;
+      }
+      
+      console.log('Push subscription saved successfully');
 
     } catch (error) {
       console.error('Error subscribing to push notifications:', error);

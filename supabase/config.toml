@@ -1,1 +1,7 @@
 project_id = "vvbobbonmwccytcjhacm"
+
+[functions.send-push-notification]
+verify_jwt = false
+
+[functions.schedule-workout-reminders]
+verify_jwt = false
