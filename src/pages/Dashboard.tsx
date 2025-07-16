@@ -72,12 +72,7 @@ const Dashboard = () => {
               <Flame className="text-accent" size={20} />
               <span className="font-bold text-lg">{stats?.current_streak || 0}</span>
             </div>
-            <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => {
-            localStorage.removeItem("brofit_user");
-            navigate("/auth");
-          }}>
-              <LogOut size={20} />
-            </Button>
+            
           </div>
         </div>
       </div>
