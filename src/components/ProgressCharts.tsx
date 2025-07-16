@@ -18,62 +18,36 @@ export const ProgressCharts = () => {
 
     const fetchProgressData = async () => {
       try {
-        // Buscar dados reais dos exercise_records
-        const { data: exerciseRecords, error } = await supabase
-          .from('exercise_records')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('achieved_at', { ascending: true });
-
-        if (error) {
-          console.error('Error fetching exercise records:', error);
-          return;
-        }
-
-        // Processar dados para gráfico de evolução de força
-        const exerciseEvolution = {};
-        exerciseRecords?.forEach(record => {
-          if (!exerciseEvolution[record.exercise_name]) {
-            exerciseEvolution[record.exercise_name] = [];
-          }
-          exerciseEvolution[record.exercise_name].push({
-            date: new Date(record.achieved_at).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' }),
-            weight: record.max_weight,
-            reps: record.max_reps
-          });
-        });
-
-        // Pegar os 5 exercícios com mais dados
-        const topExercises = Object.entries(exerciseEvolution)
-          .sort(([,a], [,b]) => (b as any[]).length - (a as any[]).length)
-          .slice(0, 5)
-          .map(([exercise, data]) => ({
-            exercise,
-            weight: (data as any)[(data as any).length - 1]?.weight || 0,
-            previous: (data as any).length > 1 ? (data as any)[(data as any).length - 2]?.weight : 0,
-            data: (data as any).slice(-10) // Últimos 10 registros
-          }));
-
-        // Simular dados dos últimos 30 dias para treinos
+        // Simular dados dos últimos 30 dias para demonstração
         const last30Days = Array.from({ length: 30 }, (_, i) => {
           const date = new Date();
           date.setDate(date.getDate() - (29 - i));
           return date.toISOString().split('T')[0];
         });
 
+        // Gerar dados simulados de treinos
         const workoutProgress = last30Days.map((date, index) => {
-          const hasWorkout = Math.random() > 0.6;
+          const hasWorkout = Math.random() > 0.6; // 40% chance de treino
           const totalWorkouts = hasWorkout ? Math.floor(index / 7) + 1 : Math.floor(index / 7);
           return {
-            date: date.slice(5),
+            date: date.slice(5), // MM-DD format
             workouts: totalWorkouts,
             weight: hasWorkout ? Math.floor(Math.random() * 2000) + 1000 : 0,
             day: index + 1
           };
         });
 
+        // Dados de força por exercício (simulado)
+        const strengthProgress = [
+          { exercise: 'Supino', weight: 80, previous: 75 },
+          { exercise: 'Agachamento', weight: 120, previous: 110 },
+          { exercise: 'Levantamento Terra', weight: 140, previous: 135 },
+          { exercise: 'Desenvolvimento', weight: 60, previous: 55 },
+          { exercise: 'Rosca Direta', weight: 25, previous: 22 },
+        ];
+
         setWorkoutData(workoutProgress);
-        setStrengthData(topExercises);
+        setStrengthData(strengthProgress);
       } catch (error) {
         console.error('Error fetching progress data:', error);
       } finally {

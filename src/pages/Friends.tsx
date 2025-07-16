@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFriends, UserSearchResult } from "@/hooks/useFriends";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
@@ -23,7 +22,6 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Friends = () => {
-  const navigate = useNavigate();
   const {
     friends,
     pendingRequests,
@@ -82,30 +80,24 @@ const Friends = () => {
   };
 
   const FriendCard = ({ friend }: { friend: any }) => (
-    <Card 
-      className="floating-card p-4 hover:scale-[1.01] transition-all duration-300 cursor-pointer"
-      onClick={() => navigate(`/friend/${friend.user_id}`)}
-    >
+    <Card className="floating-card p-4 hover:scale-[1.01] transition-all duration-300">
       <div className="flex items-center gap-4">
         <Avatar className="w-12 h-12">
-          <AvatarImage 
-            src={friend.avatar_url}
-            className="object-cover object-center"
-          />
+          <AvatarImage src={friend.avatar_url} />
           <AvatarFallback className="bg-gradient-primary text-primary-foreground">
             {getInitials(friend.display_name)}
           </AvatarFallback>
         </Avatar>
 
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold truncate">{friend.display_name}</h3>
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex-1">
+          <h3 className="font-semibold">{friend.display_name}</h3>
+          <div className="flex items-center gap-2">
             {friend.experience_level && (
               <Badge variant="outline" className="text-xs">
                 {getExperienceLabel(friend.experience_level)}
               </Badge>
             )}
-            <span className="text-xs sm:text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               Amigos desde {formatTimeAgo(friend.created_at)}
             </span>
           </div>
@@ -116,12 +108,7 @@ const Friends = () => {
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-destructive shrink-0"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <Button variant="ghost" size="sm" className="text-destructive">
               Remover
             </Button>
           </AlertDialogTrigger>

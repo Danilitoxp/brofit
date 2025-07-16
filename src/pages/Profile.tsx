@@ -252,8 +252,57 @@ const Profile = () => {
             </Card>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar com Estatísticas */}
           <div className="space-y-6">
+            {/* Estatísticas de Treino */}
+            <Card className="floating-card p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Trophy size={20} className="mr-2" />
+                Estatísticas
+              </h3>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Total de Treinos</span>
+                  <span className="font-bold">{stats?.total_workouts || 0}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Exercícios Realizados</span>
+                  <span className="font-bold">{stats?.total_exercises || 0}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Peso Total Levantado</span>
+                  <span className="font-bold">{stats?.total_weight_lifted || 0}kg</span>
+                </div>
+
+                <Separator />
+
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Sequência Atual</span>
+                  <Badge variant="secondary">{stats?.current_streak || 0} dias</Badge>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Maior Sequência</span>
+                  <Badge variant="outline">{stats?.longest_streak || 0} dias</Badge>
+                </div>
+
+                {stats?.last_workout_date && <>
+                    <Separator />
+                    <div>
+                      <span className="text-sm text-muted-foreground">Último Treino</span>
+                      <div className="text-sm font-medium">
+                        {format(new Date(stats.last_workout_date), "dd 'de' MMMM", {
+                      locale: pt
+                    })}
+                      </div>
+                    </div>
+                  </>}
+              </div>
+            </Card>
+
             {/* Configurações Rápidas */}
             <Card className="floating-card p-6">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
