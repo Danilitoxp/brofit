@@ -13,10 +13,12 @@ const Ranking = () => {
     loading,
     exerciseNames,
     getExerciseRanking,
+    getGeneralRanking,
     getFriendsRanking
   } = useRanking();
   const [selectedExercise, setSelectedExercise] = useState<string>("");
   const [exerciseRanking, setExerciseRanking] = useState<RankingEntry[]>([]);
+  const [generalRanking, setGeneralRanking] = useState<RankingEntry[]>([]);
   const [friendsRanking, setFriendsRanking] = useState<RankingEntry[]>([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
   const fetchExerciseRanking = async (exercise: string) => {
@@ -25,6 +27,16 @@ const Ranking = () => {
     try {
       const data = await getExerciseRanking(exercise, 50);
       setExerciseRanking(data);
+    } finally {
+      setLoadingRanking(false);
+    }
+  };
+
+  const fetchGeneralRanking = async () => {
+    setLoadingRanking(true);
+    try {
+      const data = await getGeneralRanking(50);
+      setGeneralRanking(data);
     } finally {
       setLoadingRanking(false);
     }
@@ -49,6 +61,10 @@ const Ranking = () => {
       fetchFriendsRanking(selectedExercise);
     }
   }, [selectedExercise]);
+
+  useEffect(() => {
+    fetchGeneralRanking();
+  }, []);
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
@@ -166,6 +182,7 @@ const Ranking = () => {
               </Select>
             </div>
             <Button variant="outline" onClick={() => {
+            fetchGeneralRanking();
             if (selectedExercise) {
               fetchExerciseRanking(selectedExercise);
               fetchFriendsRanking(selectedExercise);
@@ -177,11 +194,15 @@ const Ranking = () => {
         </Card>
 
         {/* Tabs de Rankings */}
-        <Tabs defaultValue="global" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="global" className="flex items-center gap-2">
+        <Tabs defaultValue="general" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="general" className="flex items-center gap-2">
               <Trophy size={16} />
-              Ranking por Exercício
+              Geral
+            </TabsTrigger>
+            <TabsTrigger value="exercise" className="flex items-center gap-2">
+              <Target size={16} />
+              Por Exercício
             </TabsTrigger>
             <TabsTrigger value="friends" className="flex items-center gap-2">
               <Users size={16} />
@@ -189,7 +210,22 @@ const Ranking = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="global" className="mt-6">
+          <TabsContent value="general" className="mt-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Ranking Geral</h2>
+                {loadingRanking && <div className="animate-pulse text-sm text-muted-foreground">
+                    Carregando...
+                  </div>}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Baseado na soma dos recordes máximos de todos os exercícios
+              </p>
+              <RankingList data={generalRanking} showTotalScore={true} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="exercise" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">
