@@ -109,8 +109,8 @@ const Ranking = () => {
                 <h3 className="font-semibold">{entry.display_name}</h3>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   {showTotalScore ? <span>Total: {entry.total_score?.toFixed(1) || 0}kg</span> : <>
-                      <span>Peso: {entry.max_weight}kg</span>
-                      <span>Reps: {entry.max_reps}</span>
+                      <span className="font-bold">Peso: {entry.max_weight}kg</span>
+                      <span className="font-bold">Reps: {entry.max_reps}</span>
                     </>}
                 </div>
               </div>
