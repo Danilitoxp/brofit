@@ -115,19 +115,9 @@ const Ranking = () => {
                 </div>
               </div>
 
-              {entry.rank <= 3 && (
-  <div className="text-right">
-    <div className={`text-3xl font-extrabold tracking-tight ${
-      entry.rank === 1
-        ? 'text-green-500'
-        : entry.rank === 2
-        ? 'text-gray-300'
-        : 'text-amber-500'
-    }`}>
-      {entry.max_weight}kg
-    </div>
-  </div>
-)}
+              {entry.rank <= 3 && <div className="text-right">
+    
+  </div>}
 
             </div>
           </Card>)}
