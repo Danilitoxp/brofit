@@ -110,7 +110,7 @@ const Ranking = () => {
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   {showTotalScore ? <span>Total: {entry.total_score?.toFixed(1) || 0}kg</span> : <>
                       <span className="font-bold">Peso: {entry.max_weight}kg</span>
-                      <span className="font-bold">Reps: {entry.max_reps}</span>
+                      
                     </>}
                 </div>
               </div>
