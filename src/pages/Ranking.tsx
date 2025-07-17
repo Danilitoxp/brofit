@@ -8,14 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRanking, RankingEntry } from "@/hooks/useRanking";
 import { useEffect } from "react";
-
 const Ranking = () => {
-  const { loading, exerciseNames, getExerciseRanking, getFriendsRanking } = useRanking();
+  const {
+    loading,
+    exerciseNames,
+    getExerciseRanking,
+    getFriendsRanking
+  } = useRanking();
   const [selectedExercise, setSelectedExercise] = useState<string>("");
   const [exerciseRanking, setExerciseRanking] = useState<RankingEntry[]>([]);
   const [friendsRanking, setFriendsRanking] = useState<RankingEntry[]>([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
-
   const fetchExerciseRanking = async (exercise: string) => {
     if (!exercise) return;
     setLoadingRanking(true);
@@ -26,7 +29,6 @@ const Ranking = () => {
       setLoadingRanking(false);
     }
   };
-
   const fetchFriendsRanking = async (exercise?: string) => {
     setLoadingRanking(true);
     try {
@@ -36,58 +38,58 @@ const Ranking = () => {
       setLoadingRanking(false);
     }
   };
-
   useEffect(() => {
     if (exerciseNames.length > 0 && !selectedExercise) {
       setSelectedExercise(exerciseNames[0]);
     }
   }, [exerciseNames]);
-
   useEffect(() => {
     if (selectedExercise) {
       fetchExerciseRanking(selectedExercise);
       fetchFriendsRanking(selectedExercise);
     }
   }, [selectedExercise]);
-
   const getRankIcon = (rank: number) => {
     switch (rank) {
-      case 1: return <Crown className="w-6 h-6 text-yellow-500" />;
-      case 2: return <Medal className="w-6 h-6 text-gray-400" />;
-      case 3: return <Medal className="w-6 h-6 text-amber-600" />;
-      default: return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold text-muted-foreground">#{rank}</span>;
+      case 1:
+        return <Crown className="w-6 h-6 text-yellow-500" />;
+      case 2:
+        return <Medal className="w-6 h-6 text-gray-400" />;
+      case 3:
+        return <Medal className="w-6 h-6 text-amber-600" />;
+      default:
+        return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold text-muted-foreground">#{rank}</span>;
     }
   };
-
   const getRankBadgeVariant = (rank: number) => {
     switch (rank) {
-      case 1: return "default";
-      case 2: return "secondary";
-      case 3: return "outline";
-      default: return "outline";
+      case 1:
+        return "default";
+      case 2:
+        return "secondary";
+      case 3:
+        return "outline";
+      default:
+        return "outline";
     }
   };
-
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
-
-  const RankingList = ({ data, showTotalScore = false }: { data: RankingEntry[], showTotalScore?: boolean }) => (
-    <div className="space-y-3">
-      {data.length === 0 ? (
-        <Card className="floating-card p-8 text-center">
+  const RankingList = ({
+    data,
+    showTotalScore = false
+  }: {
+    data: RankingEntry[];
+    showTotalScore?: boolean;
+  }) => <div className="space-y-3">
+      {data.length === 0 ? <Card className="floating-card p-8 text-center">
           <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">Nenhum dado encontrado</h3>
           <p className="text-muted-foreground">
-            {selectedExercise 
-              ? "Ninguém registrou esse exercício ainda."
-              : "Selecione um exercício para ver o ranking."
-            }
+            {selectedExercise ? "Ninguém registrou esse exercício ainda." : "Selecione um exercício para ver o ranking."}
           </p>
-        </Card>
-      ) : (
-        data.map((entry) => (
-          <Card key={entry.user_id} className="floating-card p-4 hover:scale-[1.01] transition-all duration-300">
+        </Card> : data.map(entry => <Card key={entry.user_id} className="floating-card p-4 hover:scale-[1.01] transition-all duration-300">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
                 {getRankIcon(entry.rank)}
@@ -106,37 +108,21 @@ const Ranking = () => {
               <div className="flex-1">
                 <h3 className="font-semibold">{entry.display_name}</h3>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  {showTotalScore ? (
-                    <span>Total: {entry.total_score?.toFixed(1) || 0}kg</span>
-                  ) : (
-                    <>
+                  {showTotalScore ? <span>Total: {entry.total_score?.toFixed(1) || 0}kg</span> : <>
                       <span>Peso: {entry.max_weight}kg</span>
                       <span>Reps: {entry.max_reps}</span>
-                    </>
-                  )}
+                    </>}
                 </div>
               </div>
 
-              {entry.rank <= 3 && (
-                <div className="text-right">
-                  <div className={`text-2xl font-bold ${
-                    entry.rank === 1 ? 'text-yellow-500' : 
-                    entry.rank === 2 ? 'text-gray-400' : 'text-amber-600'
-                  }`}>
-                    {showTotalScore ? `${entry.total_score?.toFixed(0)}kg` : `${entry.max_weight}kg`}
-                  </div>
-                </div>
-              )}
+              {entry.rank <= 3 && <div className="text-right">
+                  
+                </div>}
             </div>
-          </Card>
-        ))
-      )}
-    </div>
-  );
-
+          </Card>)}
+    </div>;
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background p-6">
+    return <div className="min-h-screen bg-background p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
             <div className="animate-pulse space-y-4">
@@ -145,12 +131,9 @@ const Ranking = () => {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background p-6">
+  return <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -175,20 +158,18 @@ const Ranking = () => {
                   <SelectValue placeholder="Selecione um exercício" />
                 </SelectTrigger>
                 <SelectContent>
-                  {exerciseNames.map((exercise) => (
-                    <SelectItem key={exercise} value={exercise}>
+                  {exerciseNames.map(exercise => <SelectItem key={exercise} value={exercise}>
                       {exercise}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <Button variant="outline" onClick={() => {
-              if (selectedExercise) {
-                fetchExerciseRanking(selectedExercise);
-                fetchFriendsRanking(selectedExercise);
-              }
-            }}>
+            if (selectedExercise) {
+              fetchExerciseRanking(selectedExercise);
+              fetchFriendsRanking(selectedExercise);
+            }
+          }}>
               Atualizar
             </Button>
           </div>
@@ -213,17 +194,12 @@ const Ranking = () => {
                 <h2 className="text-xl font-semibold">
                   {selectedExercise ? `Ranking - ${selectedExercise}` : "Selecione um exercício"}
                 </h2>
-                {loadingRanking && (
-                  <div className="animate-pulse text-sm text-muted-foreground">
+                {loadingRanking && <div className="animate-pulse text-sm text-muted-foreground">
                     Carregando...
-                  </div>
-                )}
+                  </div>}
               </div>
 
-              <RankingList 
-                data={exerciseRanking} 
-                showTotalScore={false}
-              />
+              <RankingList data={exerciseRanking} showTotalScore={false} />
             </div>
           </TabsContent>
 
@@ -233,15 +209,12 @@ const Ranking = () => {
                 <h2 className="text-xl font-semibold">
                   {selectedExercise ? `Amigos - ${selectedExercise}` : "Ranking dos Amigos"}
                 </h2>
-                {loadingRanking && (
-                  <div className="animate-pulse text-sm text-muted-foreground">
+                {loadingRanking && <div className="animate-pulse text-sm text-muted-foreground">
                     Carregando...
-                  </div>
-                )}
+                  </div>}
               </div>
 
-              {friendsRanking.length === 0 ? (
-                <Card className="floating-card p-8 text-center">
+              {friendsRanking.length === 0 ? <Card className="floating-card p-8 text-center">
                   <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">Nenhum amigo encontrado</h3>
                   <p className="text-muted-foreground mb-4">
@@ -251,19 +224,11 @@ const Ranking = () => {
                     <Target className="mr-2" size={16} />
                     Encontrar Amigos
                   </Button>
-                </Card>
-              ) : (
-                <RankingList 
-                  data={friendsRanking} 
-                  showTotalScore={false}
-                />
-              )}
+                </Card> : <RankingList data={friendsRanking} showTotalScore={false} />}
             </div>
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Ranking;
