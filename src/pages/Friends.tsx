@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { UserPlus, Search, Check, X, Users, UserCheck, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -82,29 +83,34 @@ const Friends = () => {
   const FriendCard = ({ friend }: { friend: any }) => (
     <Card className="floating-card p-4 hover:scale-[1.01] transition-all duration-300">
       <div className="flex items-center gap-4">
-        <Avatar className="w-12 h-12">
-          <AvatarImage src={friend.avatar_url} />
-          <AvatarFallback className="bg-gradient-primary text-primary-foreground">
-            {getInitials(friend.display_name)}
-          </AvatarFallback>
-        </Avatar>
+        <Link 
+          to={`/friends/${friend.user_id}`} 
+          className="flex items-center gap-4 flex-1 hover:bg-muted/50 p-2 rounded-lg transition-colors"
+        >
+          <Avatar className="w-12 h-12">
+            <AvatarImage src={friend.avatar_url} />
+            <AvatarFallback className="bg-gradient-primary text-primary-foreground">
+              {getInitials(friend.display_name)}
+            </AvatarFallback>
+          </Avatar>
 
-        <div className="flex-1">
-          <h3 className="font-semibold">{friend.display_name}</h3>
-          <div className="flex items-center gap-2">
-            {friend.experience_level && (
-              <Badge variant="outline" className="text-xs">
-                {getExperienceLabel(friend.experience_level)}
-              </Badge>
+          <div className="flex-1">
+            <h3 className="font-semibold">{friend.display_name}</h3>
+            <div className="flex items-center gap-2">
+              {friend.experience_level && (
+                <Badge variant="outline" className="text-xs">
+                  {getExperienceLabel(friend.experience_level)}
+                </Badge>
+              )}
+              <span className="text-sm text-muted-foreground">
+                Amigos desde {formatTimeAgo(friend.created_at)}
+              </span>
+            </div>
+            {friend.bio && (
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{friend.bio}</p>
             )}
-            <span className="text-sm text-muted-foreground">
-              Amigos desde {formatTimeAgo(friend.created_at)}
-            </span>
           </div>
-          {friend.bio && (
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{friend.bio}</p>
-          )}
-        </div>
+        </Link>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>

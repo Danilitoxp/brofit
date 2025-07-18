@@ -116,16 +116,36 @@ export const ProgressCharts = () => {
       </div>;
   }
   return <div className="space-y-6">
-      {/* Estatísticas Gerais */}
-      
-
-      {/* Gráfico de Evolução de Treinos */}
-      
-
-      {/* Gráfico de Peso por Treino */}
-      
-
-      {/* Gráfico de Recordes por Exercício */}
-      {strengthData.length > 0}
+      {/* Progresso por Exercício */}
+      <Card className="floating-card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Dumbbell className="text-primary" size={20} />
+          <h3 className="font-semibold text-lg">Evolução por Exercício</h3>
+        </div>
+        
+        {strengthData.length > 0 ? (
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={strengthData}>
+                <XAxis 
+                  dataKey="exercise" 
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Bar dataKey="weight" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Dumbbell size={48} className="mx-auto mb-4 opacity-50" />
+            <p>Nenhum exercício registrado ainda</p>
+            <p className="text-sm">Crie treinos para ver sua evolução</p>
+          </div>
+        )}
+      </Card>
     </div>;
 };

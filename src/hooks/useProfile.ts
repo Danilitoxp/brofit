@@ -81,22 +81,74 @@ export const useProfile = () => {
     if (!user) return null;
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      // Criar canvas para redimensionar a imagem
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not get canvas context');
+      
+      const img = new Image();
+      
+      return new Promise((resolve) => {
+        img.onload = async () => {
+          // Definir tamanho fixo quadrado para evitar distorção
+          const size = 400;
+          canvas.width = size;
+          canvas.height = size;
+          
+          // Calcular o recorte centralizado
+          const aspectRatio = img.width / img.height;
+          let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height;
+          
+          if (aspectRatio > 1) {
+            // Imagem mais larga - recortar nas laterais
+            sourceWidth = img.height;
+            sourceX = (img.width - img.height) / 2;
+          } else if (aspectRatio < 1) {
+            // Imagem mais alta - recortar em cima e embaixo
+            sourceHeight = img.width;
+            sourceY = (img.height - img.width) / 2;
+          }
+          
+          // Desenhar a imagem recortada e redimensionada
+          ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, size, size);
+          
+          // Converter para blob
+          canvas.toBlob(async (blob) => {
+            if (!blob) {
+              resolve(null);
+              return;
+            }
+            
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, {
-          upsert: true
-        });
+            const { error: uploadError } = await supabase.storage
+              .from('avatars')
+              .upload(fileName, blob, {
+                upsert: true
+              });
 
-      if (uploadError) throw uploadError;
+            if (uploadError) {
+              console.error('Error uploading avatar:', uploadError);
+              resolve(null);
+              return;
+            }
 
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
+            const { data } = supabase.storage
+              .from('avatars')
+              .getPublicUrl(fileName);
 
-      return data.publicUrl;
+            resolve(data.publicUrl);
+          }, 'image/jpeg', 0.8);
+        };
+        
+        img.onerror = () => {
+          console.error('Error loading image');
+          resolve(null);
+        };
+        
+        img.src = URL.createObjectURL(file);
+      });
     } catch (error) {
       console.error('Erro ao fazer upload do avatar:', error);
       toast({

@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import Exercises from "./pages/Exercises";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { FriendProfile } from "./pages/FriendProfile";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="progress" element={<Progress />} />
               <Route path="ranking" element={<Ranking />} />
               <Route path="friends" element={<Friends />} />
+              <Route path="friends/:userId" element={<FriendProfile />} />
               <Route path="profile" element={<Profile />} />
               <Route path="exercises" element={<Exercises />} />
             </Route>
