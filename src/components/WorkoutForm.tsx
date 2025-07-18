@@ -62,16 +62,23 @@ export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutF
   const [customExercises, setCustomExercises] = useState<Exercise[]>([]);
 
   useEffect(() => {
-    const fetchCustomExercises = async () => {
-      const { data, error } = await supabase
-        .from('exercises')
-        .select('*');
-      if (!error && data) {
-        setCustomExercises(data);
-      }
-    };
-    fetchCustomExercises();
-  }, []);
+  const fetchCustomExercises = async () => {
+    const { data, error } = await supabase
+      .from('custom_exercises')
+      .select('*');
+
+    if (!error && data) {
+      const formatted = data.map((item) => ({
+        ...item,
+        muscle_groups: item.muscle_groups || []
+      }));
+      setCustomExercises(formatted);
+    }
+  };
+
+  fetchCustomExercises();
+}, []);
+
 
   // junta os padrões com os personalizados
   const allExercises = [...PREDEFINED_EXERCISES, ...customExercises];
