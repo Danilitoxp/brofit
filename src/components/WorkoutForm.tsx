@@ -8,6 +8,33 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Search } from "lucide-react";
 import { Workout, WorkoutExercise } from "@/hooks/useWorkouts";
 import { PREDEFINED_EXERCISES, EXERCISE_CATEGORIES, getExercisesByCategory } from "@/data/exercises";
+import { useEffect } from "react";
+import { getExercisesByCategory } from "@/data/exercises";
+
+const [allExercises, setAllExercises] = useState<Exercise[]>([]);
+
+useEffect(() => {
+  const loadExercises = async () => {
+    if (selectedCategory === "all") {
+      // Se quiser buscar tudo, cria função getAllExercises
+      const allCategories = EXERCISE_CATEGORIES.map(c => c.id);
+      const all: Exercise[] = [];
+
+      for (const cat of allCategories) {
+        const exs = await getExercisesByCategory(cat);
+        all.push(...exs);
+      }
+
+      setAllExercises(all);
+    } else {
+      const exercises = await getExercisesByCategory(selectedCategory);
+      setAllExercises(exercises);
+    }
+  };
+
+  loadExercises();
+}, [selectedCategory]);
+
 
 interface WorkoutFormProps {
   workout?: Workout;
@@ -55,11 +82,11 @@ export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutF
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   
-  const filteredExercises = PREDEFINED_EXERCISES.filter(exercise => {
-    const matchesCategory = selectedCategory === "all" || exercise.category === selectedCategory;
-    const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+ const filteredExercises = allExercises.filter(exercise => {
+  const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
+  return matchesSearch;
+});
+
 
   const addExercise = (exerciseName: string) => {
     setExercises([
