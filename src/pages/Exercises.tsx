@@ -11,22 +11,20 @@ import { EXERCISE_CATEGORIES, PREDEFINED_EXERCISES, getAllExercises, Exercise } 
 import { Plus, Edit, Trash2, Upload, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-
-const MUSCLE_GROUPS = [
-  'Peitoral', 'Peitoral Superior', 'Peitoral Inferior',
-  'Latíssimo', 'Romboides', 'Trapézio',
-  'Deltoides', 'Deltoides Anterior', 'Deltoides Medial',
-  'Bíceps', 'Tríceps', 'Antebraço',
-  'Quadríceps', 'Posterior', 'Glúteos', 'Panturrilha',
-  'Abdômen', 'Abdômen Inferior', 'Oblíquos', 'Core',
-  'Cardio'
-];
-
+const MUSCLE_GROUPS = ['Peitoral', 'Peitoral Superior', 'Peitoral Inferior', 'Latíssimo', 'Romboides', 'Trapézio', 'Deltoides', 'Deltoides Anterior', 'Deltoides Medial', 'Bíceps', 'Tríceps', 'Antebraço', 'Quadríceps', 'Posterior', 'Glúteos', 'Panturrilha', 'Abdômen', 'Abdômen Inferior', 'Oblíquos', 'Core', 'Cardio'];
 const Exercises = () => {
-  const { customExercises, loading, createExercise, updateExercise, deactivateExercise, uploadExerciseImage } = useAdmin();
-  const { toast } = useToast();
+  const {
+    customExercises,
+    loading,
+    createExercise,
+    updateExercise,
+    deactivateExercise,
+    uploadExerciseImage
+  } = useAdmin();
+  const {
+    toast
+  } = useToast();
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
-  
   const [showForm, setShowForm] = useState(false);
   const [editingExercise, setEditingExercise] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -51,12 +49,10 @@ const Exercises = () => {
     await createExercise(exerciseData);
     await fetchAllExercises();
   };
-
   const handleUpdateSuccess = async (id: string, exerciseData: any) => {
     await updateExercise(id, exerciseData);
     await fetchAllExercises();
   };
-
   const handleDeactivateSuccess = async (id: string) => {
     await deactivateExercise(id);
     await fetchAllExercises();
@@ -68,10 +64,8 @@ const Exercises = () => {
       fetchAllExercises();
     }
   }, [loading, customExercises]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.name || !formData.category || formData.muscle_groups.length === 0) {
       toast({
         title: "Erro",
@@ -80,7 +74,6 @@ const Exercises = () => {
       });
       return;
     }
-
     let imageUrl = formData.image_url;
 
     // Upload da imagem se houver
@@ -88,24 +81,19 @@ const Exercises = () => {
       setUploading(true);
       imageUrl = await uploadExerciseImage(imageFile);
       setUploading(false);
-      
       if (!imageUrl) return; // Upload falhou
     }
-
     const exerciseData = {
       ...formData,
       image_url: imageUrl
     };
-
     if (editingExercise) {
       await handleUpdateSuccess(editingExercise.id, exerciseData);
     } else {
       await handleCreateSuccess(exerciseData);
     }
-
     resetForm();
   };
-
   const resetForm = () => {
     setFormData({
       name: '',
@@ -119,7 +107,6 @@ const Exercises = () => {
     setEditingExercise(null);
     setShowForm(false);
   };
-
   const handleEdit = (exercise: any) => {
     setFormData({
       name: exercise.name,
@@ -131,7 +118,6 @@ const Exercises = () => {
     setEditingExercise(exercise);
     setShowForm(true);
   };
-
   const addMuscleGroup = () => {
     if (selectedMuscleGroup && !formData.muscle_groups.includes(selectedMuscleGroup)) {
       setFormData(prev => ({
@@ -141,18 +127,17 @@ const Exercises = () => {
       setSelectedMuscleGroup('');
     }
   };
-
   const removeMuscleGroup = (muscle: string) => {
     setFormData(prev => ({
       ...prev,
       muscle_groups: prev.muscle_groups.filter(m => m !== muscle)
     }));
   };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
         toast({
           title: "Erro",
           description: "A imagem deve ter no máximo 5MB.",
@@ -163,19 +148,14 @@ const Exercises = () => {
       setImageFile(file);
     }
   };
-
   if (loading) {
-    return (
-      <div className="container mx-auto p-4">
+    return <div className="container mx-auto p-4">
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto p-4 pb-24">
+  return <div className="container mx-auto p-4 pb-24">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Gerenciar Exercícios</h1>
@@ -203,27 +183,25 @@ const Exercises = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="name">Nome do Exercício *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Ex: Supino Reto"
-                  required
-                />
+                <Input id="name" value={formData.name} onChange={e => setFormData(prev => ({
+                ...prev,
+                name: e.target.value
+              }))} placeholder="Ex: Supino Reto" required />
               </div>
 
               <div>
                 <Label htmlFor="category">Categoria *</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                <Select value={formData.category} onValueChange={value => setFormData(prev => ({
+                ...prev,
+                category: value
+              }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    {EXERCISE_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
+                    {EXERCISE_CATEGORIES.map(cat => <SelectItem key={cat.id} value={cat.id}>
                         {cat.name}
-                      </SelectItem>
-                    ))}
+                      </SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -236,11 +214,9 @@ const Exercises = () => {
                       <SelectValue placeholder="Selecione um grupo muscular" />
                     </SelectTrigger>
                     <SelectContent>
-                      {MUSCLE_GROUPS.map((muscle) => (
-                        <SelectItem key={muscle} value={muscle}>
+                      {MUSCLE_GROUPS.map(muscle => <SelectItem key={muscle} value={muscle}>
                           {muscle}
-                        </SelectItem>
-                      ))}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
                   <Button type="button" onClick={addMuscleGroup} size="sm">
@@ -249,72 +225,33 @@ const Exercises = () => {
                 </div>
                 
                 <div className="flex flex-wrap gap-1">
-                  {formData.muscle_groups.map((muscle) => (
-                    <Badge key={muscle} variant="secondary" className="text-xs">
+                  {formData.muscle_groups.map(muscle => <Badge key={muscle} variant="secondary" className="text-xs">
                       {muscle}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 ml-1"
-                        onClick={() => removeMuscleGroup(muscle)}
-                      >
+                      <Button type="button" variant="ghost" size="sm" className="h-4 w-4 p-0 ml-1" onClick={() => removeMuscleGroup(muscle)}>
                         <X className="h-3 w-3" />
                       </Button>
-                    </Badge>
-                  ))}
+                    </Badge>)}
                 </div>
               </div>
 
               <div>
                 <Label htmlFor="description">Descrição</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Descreva como executar o exercício..."
-                  rows={3}
-                />
+                <Textarea id="description" value={formData.description} onChange={e => setFormData(prev => ({
+                ...prev,
+                description: e.target.value
+              }))} placeholder="Descreva como executar o exercício..." rows={3} />
               </div>
 
-              <div>
-                <Label htmlFor="image">Imagem do Exercício</Label>
-                <div className="mt-2">
-                  <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                  />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    PNG, JPG ou WEBP. Máximo 5MB.
-                  </p>
-                </div>
-                
-                {(formData.image_url || imageFile) && (
-                  <div className="mt-4">
-                    <img
-                      src={imageFile ? URL.createObjectURL(imageFile) : formData.image_url}
-                      alt="Preview"
-                      className="w-32 h-32 object-cover rounded-lg border"
-                    />
-                  </div>
-                )}
-              </div>
+              
 
               <div className="flex gap-2 pt-4">
                 <Button type="submit" disabled={uploading}>
-                  {uploading ? (
-                    <>
+                  {uploading ? <>
                       <Upload className="h-4 w-4 mr-2 animate-spin" />
                       Salvando...
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       {editingExercise ? 'Atualizar' : 'Criar'} Exercício
-                    </>
-                  )}
+                    </>}
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm}>
                   Cancelar
@@ -326,17 +263,10 @@ const Exercises = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {allExercises.map((exercise) => (
-          <Card key={exercise.id} className="overflow-hidden">
-            {exercise.image_url && (
-              <div className="aspect-video">
-                <img
-                  src={exercise.image_url}
-                  alt={exercise.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+        {allExercises.map(exercise => <Card key={exercise.id} className="overflow-hidden">
+            {exercise.image_url && <div className="aspect-video">
+                <img src={exercise.image_url} alt={exercise.name} className="w-full h-full object-cover" />
+              </div>}
             
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -348,25 +278,16 @@ const Exercises = () => {
                 </div>
                 
                 <div className="flex gap-1">
-                  {exercise.is_custom ? (
-                    <>
+                  {exercise.is_custom ? <>
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(exercise)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleDeactivateSuccess(exercise.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleDeactivateSuccess(exercise.id)} className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    </>
-                  ) : (
-                    <div className="text-xs text-muted-foreground">
+                    </> : <div className="text-xs text-muted-foreground">
                       Exercício padrão
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </div>
             </CardHeader>
@@ -376,30 +297,24 @@ const Exercises = () => {
                 <div>
                   <p className="text-sm font-medium mb-1">Grupos Musculares:</p>
                   <div className="flex flex-wrap gap-1">
-                    {exercise.muscle_groups.map((muscle) => (
-                      <Badge key={muscle} variant="outline" className="text-xs">
+                    {exercise.muscle_groups.map(muscle => <Badge key={muscle} variant="outline" className="text-xs">
                         {muscle}
-                      </Badge>
-                    ))}
+                      </Badge>)}
                   </div>
                 </div>
                 
-                {exercise.description && (
-                  <div>
+                {exercise.description && <div>
                     <p className="text-sm font-medium mb-1">Descrição:</p>
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {exercise.description}
                     </p>
-                  </div>
-                )}
+                  </div>}
               </div>
             </CardContent>
-          </Card>
-        ))}
+          </Card>)}
       </div>
 
-      {allExercises.length === 0 && (
-        <div className="text-center py-12">
+      {allExercises.length === 0 && <div className="text-center py-12">
           <p className="text-muted-foreground mb-4">
             Nenhum exercício personalizado criado ainda.
           </p>
@@ -407,10 +322,7 @@ const Exercises = () => {
             <Plus className="h-4 w-4 mr-2" />
             Criar Primeiro Exercício
           </Button>
-        </div>
-      )}
-    </div>
-  );
+        </div>}
+    </div>;
 };
-
 export default Exercises;
