@@ -49,6 +49,10 @@ export const AchievementsWidget = () => {
     };
 
     fetchData();
+    
+    // Refresh achievements every 30 seconds to catch new ones
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
   }, [user]);
 
   const getCategoryIcon = (category: string) => {
