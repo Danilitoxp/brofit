@@ -18,8 +18,7 @@ const Auth = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    confirmPassword: "",
-    nickname: ""
+    confirmPassword: ""
   });
 
   // Redirect if already authenticated
@@ -37,19 +36,10 @@ const Auth = () => {
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.password || (!isLogin && !formData.nickname)) {
+    if (!formData.email || !formData.password) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!isLogin && !/^[a-z0-9_]+$/.test(formData.nickname)) {
-      toast({
-        title: "Erro",
-        description: "Nickname deve conter apenas letras minúsculas, números e underscore.",
         variant: "destructive"
       });
       return false;
@@ -98,7 +88,7 @@ const Auth = () => {
       if (isLogin) {
         result = await signIn(formData.email, formData.password);
       } else {
-        result = await signUp(formData.email, formData.password, formData.nickname);
+        result = await signUp(formData.email, formData.password);
       }
 
       if (result.error) {
@@ -132,7 +122,7 @@ const Auth = () => {
             description: "Verifique seu email para confirmar a conta."
           });
           setIsLogin(true);
-          setFormData({ email: "", password: "", confirmPassword: "", nickname: "" });
+          setFormData({ email: "", password: "", confirmPassword: "" });
         }
       }
     } catch (error) {
@@ -149,7 +139,7 @@ const Auth = () => {
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setFormData({ email: "", password: "", confirmPassword: "", nickname: "" });
+    setFormData({ email: "", password: "", confirmPassword: "" });
   };
 
   if (loading) {
@@ -234,31 +224,6 @@ const Auth = () => {
                 </Button>
               </div>
             </div>
-
-            {/* Nickname (only for signup) */}
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="nickname">Nickname</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="nickname"
-                    name="nickname"
-                    type="text"
-                    placeholder="Ex: danilitoxp"
-                    value={formData.nickname}
-                    onChange={(e) => setFormData({ ...formData, nickname: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
-                    className="pl-10"
-                    required
-                    pattern="[a-z0-9_]+"
-                    title="Apenas letras minúsculas, números e underscore"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Usado para busca de amigos. Apenas letras, números e underscore.
-                </p>
-              </div>
-            )}
 
             {/* Confirm Password (only for signup) */}
             {!isLogin && (
