@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Search } from "lucide-react";
 import { Workout, WorkoutExercise } from "@/hooks/useWorkouts";
 import { PREDEFINED_EXERCISES, EXERCISE_CATEGORIES, getExercisesByCategory } from "@/data/exercises";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Exercise } from "@/data/exercises"; // ou onde estiver definido
 
 interface WorkoutFormProps {
   workout?: Workout;
@@ -54,12 +57,39 @@ export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutF
   );
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  
-  const filteredExercises = PREDEFINED_EXERCISES.filter(exercise => {
+
+  // NOVO: busca os exercícios personalizados
+  const [customExercises, setCustomExercises] = useState<Exercise[]>([]);
+
+  useEffect(() => {
+  const fetchCustomExercises = async () => {
+    const { data, error } = await supabase
+      .from('custom_exercises')
+      .select('*');
+
+    if (!error && data) {
+      const formatted = data.map((item) => ({
+        ...item,
+        muscle_groups: item.muscle_groups || []
+      }));
+      setCustomExercises(formatted);
+    }
+  };
+
+  fetchCustomExercises();
+}, []);
+
+
+  // junta os padrões com os personalizados
+  const allExercises = [...PREDEFINED_EXERCISES, ...customExercises];
+
+  const filteredExercises = allExercises.filter(exercise => {
     const matchesCategory = selectedCategory === "all" || exercise.category === selectedCategory;
     const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+
 
   const addExercise = (exerciseName: string) => {
     setExercises([

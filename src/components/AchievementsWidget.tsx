@@ -24,13 +24,18 @@ export const AchievementsWidget = () => {
 
     const fetchData = async () => {
       try {
+        console.log('Buscando conquistas...');
+        
         // Buscar todas as conquistas
         const { data: allAchievements, error: achievementsError } = await supabase
           .from('achievements')
           .select('*')
           .order('requirement_value', { ascending: true });
 
-        if (achievementsError) throw achievementsError;
+        if (achievementsError) {
+          console.error('Erro ao buscar conquistas:', achievementsError);
+          throw achievementsError;
+        }
 
         // Buscar conquistas do usuário
         const { data: userAchievementsData, error: userError } = await supabase
@@ -38,17 +43,28 @@ export const AchievementsWidget = () => {
           .select('achievement_id, earned_at')
           .eq('user_id', user.id);
 
-        if (userError) throw userError;
+        if (userError) {
+          console.error('Erro ao buscar conquistas do usuário:', userError);
+          throw userError;
+        }
+
+        console.log('Conquistas encontradas:', allAchievements?.length || 0);
+        console.log('Conquistas do usuário:', userAchievementsData?.length || 0);
+        console.log('User ID:', user.id);
 
         setAchievements(allAchievements || []);
         setUserAchievements(userAchievementsData?.map(ua => ua.achievement_id) || []);
 
       } catch (error) {
-        console.error('Error fetching achievements:', error);
+        console.error('Erro geral ao buscar conquistas:', error);
       }
     };
 
     fetchData();
+    
+    // Refresh achievements every 30 seconds to catch new ones
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
   }, [user]);
 
   const getCategoryIcon = (category: string) => {

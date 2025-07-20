@@ -95,6 +95,19 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar nickname obrigatório
+    if (!formData.nickname || formData.nickname.trim() === '') {
+      alert('Nickname é obrigatório');
+      return;
+    }
+    
+    // Validar formato do nickname
+    if (!/^[a-z0-9_]+$/.test(formData.nickname)) {
+      alert('Nickname deve conter apenas letras minúsculas, números e underscore');
+      return;
+    }
+    
     onSubmit(formData);
   };
 
@@ -167,9 +180,11 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
             <Input
               id="nickname"
               value={formData.nickname || ""}
-              onChange={(e) => handleInputChange('nickname', e.target.value)}
+              onChange={(e) => handleInputChange('nickname', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
               placeholder="Ex: danilitoxp"
               required
+              pattern="[a-z0-9_]+"
+              title="Apenas letras minúsculas, números e underscore"
             />
             <p className="text-xs text-muted-foreground">
               Usado para busca de amigos. Apenas letras, números e underscore.

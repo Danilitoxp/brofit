@@ -72,9 +72,19 @@ export const useWorkouts = () => {
   };
 
   const createWorkout = async (workout: Workout) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Você precisa estar logado para criar treinos.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
+      console.log('Criando treino:', workout);
+      console.log('User ID:', user.id);
+
       const { data: workoutData, error: workoutError } = await supabase
         .from('workouts')
         .insert({
@@ -86,7 +96,12 @@ export const useWorkouts = () => {
         .select()
         .single();
 
-      if (workoutError) throw workoutError;
+      if (workoutError) {
+        console.error('Erro ao criar workout:', workoutError);
+        throw workoutError;
+      }
+
+      console.log('Workout criado:', workoutData);
 
       if (workout.exercises.length > 0) {
         const exercisesToInsert = workout.exercises.map((exercise, index) => ({
@@ -94,15 +109,22 @@ export const useWorkouts = () => {
           exercise_name: exercise.exercise_name,
           sets: exercise.sets,
           reps: exercise.reps,
-          weight: exercise.weight,
+          weight: exercise.weight || 0,
           exercise_order: index
         }));
+
+        console.log('Inserindo exercícios:', exercisesToInsert);
 
         const { error: exercisesError } = await supabase
           .from('workout_exercises')
           .insert(exercisesToInsert);
 
-        if (exercisesError) throw exercisesError;
+        if (exercisesError) {
+          console.error('Erro ao inserir exercícios:', exercisesError);
+          throw exercisesError;
+        }
+
+        console.log('Exercícios inseridos com sucesso');
       }
 
       await fetchWorkouts();

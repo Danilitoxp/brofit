@@ -4,9 +4,11 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Trophy, Target, Star, Zap, Calendar, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Trophy, Target, Star, Zap, Calendar, TrendingUp, Dumbbell, Copy, Share2, Weight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { Workout, WorkoutExercise } from '@/hooks/useWorkouts';
 
 interface UserProfile {
   id: string;
@@ -17,6 +19,8 @@ interface UserProfile {
   avatar_url: string;
   experience_level: string;
   fitness_goal: string;
+  height: number;
+  weight: number;
 }
 
 interface UserAchievement {
@@ -38,9 +42,11 @@ interface UserStats {
 export const FriendProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -84,6 +90,36 @@ export const FriendProfile = () => {
 
         if (statsError) throw statsError;
 
+        // Buscar treinos do usuário
+        const { data: workoutsData, error: workoutsError } = await supabase
+          .from('workouts')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (workoutsError) throw workoutsError;
+
+        // Buscar exercícios de cada treino
+        const workoutsWithExercises = await Promise.all(
+          workoutsData?.map(async (workout) => {
+            const { data: exercises, error: exercisesError } = await supabase
+              .from('workout_exercises')
+              .select('*')
+              .eq('workout_id', workout.id)
+              .order('exercise_order', { ascending: true });
+
+            if (exercisesError) throw exercisesError;
+
+            return {
+              id: workout.id,
+              name: workout.name,
+              description: workout.description,
+              day_of_week: workout.day_of_week,
+              exercises: exercises || []
+            };
+          }) || []
+        );
+
         setProfile(profileData);
         setAchievements(achievementsData?.map(ua => ({
           id: ua.achievements.id,
@@ -94,6 +130,7 @@ export const FriendProfile = () => {
           earned_at: ua.earned_at
         })) || []);
         setStats(statsData);
+        setWorkouts(workoutsWithExercises);
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -117,6 +154,72 @@ export const FriendProfile = () => {
   const getInitials = (name?: string) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const copyWorkout = async (workout: Workout) => {
+    if (!user) return;
+
+    try {
+      // Criar uma cópia do treino para o usuário atual
+      const { data: newWorkout, error: workoutError } = await supabase
+        .from('workouts')
+        .insert({
+          user_id: user.id,
+          name: `${workout.name} (copiado)`,
+          description: workout.description
+        })
+        .select()
+        .single();
+
+      if (workoutError) throw workoutError;
+
+      // Copiar exercícios
+      if (workout.exercises.length > 0) {
+        const exercisesToInsert = workout.exercises.map((exercise, index) => ({
+          workout_id: newWorkout.id,
+          exercise_name: exercise.exercise_name,
+          sets: exercise.sets,
+          reps: exercise.reps,
+          weight: exercise.weight,
+          exercise_order: index
+        }));
+
+        const { error: exercisesError } = await supabase
+          .from('workout_exercises')
+          .insert(exercisesToInsert);
+
+        if (exercisesError) throw exercisesError;
+      }
+
+      toast({
+        title: "Treino copiado!",
+        description: `O treino "${workout.name}" foi copiado para seus treinos.`
+      });
+    } catch (error) {
+      console.error('Error copying workout:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar o treino.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const shareWorkout = (workout: Workout) => {
+    const workoutText = `Treino: ${workout.name}\n\nExercícios:\n${workout.exercises.map(ex => `• ${ex.exercise_name}: ${ex.sets}x${ex.reps} - ${ex.weight}kg`).join('\n')}\n\nCompartilhado do BroFit 💪`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `Treino: ${workout.name}`,
+        text: workoutText
+      });
+    } else {
+      navigator.clipboard.writeText(workoutText);
+      toast({
+        title: "Treino copiado!",
+        description: "O treino foi copiado para a área de transferência."
+      });
+    }
   };
 
   if (loading) {
@@ -195,6 +298,23 @@ export const FriendProfile = () => {
                 <p className="text-muted-foreground">{profile.fitness_goal}</p>
               </div>
             )}
+
+            {(profile.height || profile.weight) && (
+              <div className="grid grid-cols-2 gap-4">
+                {profile.height && (
+                  <div>
+                    <h4 className="font-medium text-sm">Altura</h4>
+                    <p className="text-muted-foreground">{profile.height} cm</p>
+                  </div>
+                )}
+                {profile.weight && (
+                  <div>
+                    <h4 className="font-medium text-sm">Peso</h4>
+                    <p className="text-muted-foreground">{profile.weight} kg</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -269,6 +389,68 @@ export const FriendProfile = () => {
           <div className="text-center py-8 text-muted-foreground">
             <Trophy size={48} className="mx-auto mb-4 opacity-50" />
             <p>Nenhuma conquista ainda</p>
+          </div>
+        )}
+      </Card>
+
+      {/* Treinos */}
+      <Card className="floating-card p-6">
+        <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+          <Dumbbell size={20} />
+          Treinos ({workouts.length})
+        </h3>
+        
+        {workouts.length > 0 ? (
+          <div className="space-y-4">
+            {workouts.map((workout) => (
+              <Card key={workout.id} className="p-4 border border-secondary/20">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-semibold">{workout.name}</h4>
+                    {workout.description && (
+                      <p className="text-sm text-muted-foreground">{workout.description}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyWorkout(workout)}
+                    >
+                      <Copy size={16} className="mr-1" />
+                      Copiar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => shareWorkout(workout)}
+                    >
+                      <Share2 size={16} className="mr-1" />
+                      Compartilhar
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  {workout.exercises.map((exercise, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-secondary/10 rounded">
+                      <div className="flex items-center gap-2">
+                        <Weight size={16} className="text-muted-foreground" />
+                        <span className="font-medium">{exercise.exercise_name}</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {exercise.sets}x{exercise.reps} - {exercise.weight}kg
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Dumbbell size={48} className="mx-auto mb-4 opacity-50" />
+            <p>Nenhum treino compartilhado</p>
           </div>
         )}
       </Card>
