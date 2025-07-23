@@ -23,11 +23,6 @@ interface ProfileFormProps {
   isLoading?: boolean;
 }
 
-const EXPERIENCE_LEVELS = [
-  { value: 'beginner', label: 'Iniciante' },
-  { value: 'intermediate', label: 'Intermediário' },
-  { value: 'advanced', label: 'Avançado' }
-];
 
 export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoading }: ProfileFormProps) => {
   const [formData, setFormData] = useState<Partial<Profile>>({
@@ -37,7 +32,7 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
     height: profile?.height || undefined,
     weight: profile?.weight || undefined,
     fitness_goal: profile?.fitness_goal || "",
-    experience_level: profile?.experience_level || undefined,
+    
     is_public: profile?.is_public ?? true,
     birth_date: profile?.birth_date || undefined,
     avatar_url: profile?.avatar_url || ""
@@ -192,25 +187,6 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
           </div>
         </div>
 
-        {/* Nível de experiência */}
-        <div className="space-y-2">
-          <Label>Nível de experiência</Label>
-          <Select 
-            value={formData.experience_level || ""} 
-            onValueChange={(value) => handleInputChange('experience_level', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione seu nível" />
-            </SelectTrigger>
-            <SelectContent>
-              {EXPERIENCE_LEVELS.map((level) => (
-                <SelectItem key={level.value} value={level.value}>
-                  {level.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
         {/* Bio */}
         <div className="space-y-2">
