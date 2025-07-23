@@ -237,7 +237,7 @@ export const WorkoutForm = ({ workout, onSubmit, onCancel, isLoading }: WorkoutF
         {/* Exercícios Selecionados */}
         {exercises.length > 0 && (
           <div>
-            <Label>Exercícios do Treino ({exercises.length})</Label>
+            <Label>Exercícios do Treino ({exercises.length})</Label><br>
             <div className="space-y-4">
               {exercises.map((exercise, exerciseIndex) => (
                 <Card key={exerciseIndex} className="p-4">
