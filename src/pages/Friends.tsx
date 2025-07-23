@@ -50,18 +50,6 @@ const Friends = () => {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
-  const getExperienceLabel = (level?: string) => {
-    switch (level) {
-      case 'beginner':
-        return 'Iniciante';
-      case 'intermediate':
-        return 'Intermediário';
-      case 'advanced':
-        return 'Avançado';
-      default:
-        return '';
-    }
-  };
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -85,16 +73,15 @@ const Friends = () => {
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex-1">
-            <h3 className="font-semibold">{friend.display_name}</h3>
-            <div className="flex items-center gap-2">
-              {friend.experience_level}
-              <span className="text-sm text-muted-foreground">
-                Amigos desde {formatTimeAgo(friend.created_at)}
-              </span>
+            <div className="flex-1">
+              <h3 className="font-semibold">{friend.display_name}</h3>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  Amigos desde {formatTimeAgo(friend.created_at)}
+                </span>
+              </div>
+              {friend.bio && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{friend.bio}</p>}
             </div>
-            {friend.bio && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{friend.bio}</p>}
-          </div>
         </Link>
 
         <AlertDialog>
@@ -168,11 +155,6 @@ const Friends = () => {
         <div className="flex-1">
           <h3 className="font-semibold">{user.display_name}</h3>
           {user.nickname && <p className="text-sm text-primary font-medium">@{user.nickname}</p>}
-          <div className="flex items-center gap-2 mt-1">
-            {user.experience_level && <Badge variant="outline" className="text-xs">
-                {getExperienceLabel(user.experience_level)}
-              </Badge>}
-          </div>
           {user.bio && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{user.bio}</p>}
         </div>
 

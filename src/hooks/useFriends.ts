@@ -9,7 +9,6 @@ export interface Friend {
   display_name: string;
   avatar_url?: string;
   bio?: string;
-  experience_level?: string;
   friendship_id: string;
   status: 'pending' | 'accepted' | 'declined' | 'blocked';
   is_requester: boolean;
@@ -31,7 +30,6 @@ export interface UserSearchResult {
   nickname?: string;
   avatar_url?: string;
   bio?: string;
-  experience_level?: string;
   friendship_status?: 'none' | 'pending' | 'accepted' | 'declined' | 'blocked';
   is_requester?: boolean;
 }
@@ -68,7 +66,7 @@ export const useFriends = () => {
       // Get profiles for all users
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, display_name, nickname, avatar_url, bio, experience_level')
+        .select('user_id, display_name, nickname, avatar_url, bio')
         .in('user_id', allUserIds);
 
       const friendsList: Friend[] = [];
@@ -86,7 +84,6 @@ export const useFriends = () => {
             display_name: friendProfile.display_name || 'Usuário',
             avatar_url: friendProfile.avatar_url,
             bio: friendProfile.bio,
-            experience_level: friendProfile.experience_level,
             friendship_id: friendship.id,
             status: friendship.status,
             is_requester: isRequester,
@@ -125,7 +122,7 @@ export const useFriends = () => {
     try {
       const { data: usersData, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, nickname, avatar_url, bio, experience_level, is_public')
+        .select('user_id, display_name, nickname, avatar_url, bio, is_public')
         .neq('user_id', user.id)
         .eq('is_public', true)
         .or(`nickname.ilike.%${query}%,display_name.ilike.%${query}%`)
@@ -152,7 +149,6 @@ export const useFriends = () => {
           nickname: userData.nickname,
           avatar_url: userData.avatar_url,
           bio: userData.bio,
-          experience_level: userData.experience_level,
           friendship_status: (friendship?.status as 'pending' | 'accepted' | 'declined' | 'blocked') || 'none',
           is_requester: friendship ? friendship.requester_id === user.id : false
         };
