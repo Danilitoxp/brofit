@@ -10,18 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFriends, UserSearchResult } from "@/hooks/useFriends";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Separator } from "@/components/ui/separator";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 const Friends = () => {
   const {
     friends,
@@ -34,13 +23,16 @@ const Friends = () => {
     removeFriend,
     cancelFriendRequest
   } = useFriends();
-
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
-
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification
+  } = useNotifications();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.length >= 2) {
@@ -55,38 +47,37 @@ const Friends = () => {
       setSearchResults([]);
     }
   };
-
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
-
   const getExperienceLabel = (level?: string) => {
     switch (level) {
-      case 'beginner': return 'Iniciante';
-      case 'intermediate': return 'Intermediário';
-      case 'advanced': return 'Avançado';
-      default: return '';
+      case 'beginner':
+        return 'Iniciante';
+      case 'intermediate':
+        return 'Intermediário';
+      case 'advanced':
+        return 'Avançado';
+      default:
+        return '';
     }
   };
-
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
     if (diffInMinutes < 1) return 'Agora';
     if (diffInMinutes < 60) return `${diffInMinutes}m atrás`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h atrás`;
     return `${Math.floor(diffInMinutes / 1440)}d atrás`;
   };
-
-  const FriendCard = ({ friend }: { friend: any }) => (
-    <Card className="floating-card p-4 hover:scale-[1.01] transition-all duration-300">
+  const FriendCard = ({
+    friend
+  }: {
+    friend: any;
+  }) => <Card className="floating-card p-4 hover:scale-[1.01] transition-all duration-300">
       <div className="flex items-center gap-4">
-        <Link 
-          to={`/friends/${friend.user_id}`} 
-          className="flex items-center gap-4 flex-1 hover:bg-muted/50 p-2 rounded-lg transition-colors"
-        >
+        <Link to={`/friends/${friend.user_id}`} className="flex items-center gap-4 flex-1 hover:bg-muted/50 p-2 rounded-lg transition-colors">
           <Avatar className="w-12 h-12">
             <AvatarImage src={friend.avatar_url} />
             <AvatarFallback className="bg-gradient-primary text-primary-foreground">
@@ -97,18 +88,12 @@ const Friends = () => {
           <div className="flex-1">
             <h3 className="font-semibold">{friend.display_name}</h3>
             <div className="flex items-center gap-2">
-              {friend.experience_level && (
-                <Badge variant="outline" className="text-xs">
-                  {getExperienceLabel(friend.experience_level)}
-                </Badge>
-              )}
+              {friend.experience_level}
               <span className="text-sm text-muted-foreground">
                 Amigos desde {formatTimeAgo(friend.created_at)}
               </span>
             </div>
-            {friend.bio && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{friend.bio}</p>
-            )}
+            {friend.bio && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{friend.bio}</p>}
           </div>
         </Link>
 
@@ -127,21 +112,19 @@ const Friends = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => removeFriend(friend.friendship_id)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
+              <AlertDialogAction onClick={() => removeFriend(friend.friendship_id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Remover
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </Card>
-  );
-
-  const RequestCard = ({ request }: { request: any }) => (
-    <Card className="floating-card p-4">
+    </Card>;
+  const RequestCard = ({
+    request
+  }: {
+    request: any;
+  }) => <Card className="floating-card p-4">
       <div className="flex items-center gap-4">
         <Avatar className="w-12 h-12">
           <AvatarImage src={request.requester_avatar} />
@@ -158,29 +141,22 @@ const Friends = () => {
         </div>
 
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            onClick={() => acceptFriendRequest(request.id)}
-            className="bg-secondary hover:bg-secondary/90"
-          >
+          <Button size="sm" onClick={() => acceptFriendRequest(request.id)} className="bg-secondary hover:bg-secondary/90">
             <Check size={16} className="mr-1" />
             Aceitar
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => declineFriendRequest(request.id)}
-          >
+          <Button variant="outline" size="sm" onClick={() => declineFriendRequest(request.id)}>
             <X size={16} className="mr-1" />
             Recusar
           </Button>
         </div>
       </div>
-    </Card>
-  );
-
-  const SearchResultCard = ({ user }: { user: UserSearchResult }) => (
-    <Card className="floating-card p-4">
+    </Card>;
+  const SearchResultCard = ({
+    user
+  }: {
+    user: UserSearchResult;
+  }) => <Card className="floating-card p-4">
       <div className="flex items-center gap-4">
         <Avatar className="w-12 h-12">
           <AvatarImage src={user.avatar_url} />
@@ -191,58 +167,34 @@ const Friends = () => {
 
         <div className="flex-1">
           <h3 className="font-semibold">{user.display_name}</h3>
-          {user.nickname && (
-            <p className="text-sm text-primary font-medium">@{user.nickname}</p>
-          )}
+          {user.nickname && <p className="text-sm text-primary font-medium">@{user.nickname}</p>}
           <div className="flex items-center gap-2 mt-1">
-            {user.experience_level && (
-              <Badge variant="outline" className="text-xs">
+            {user.experience_level && <Badge variant="outline" className="text-xs">
                 {getExperienceLabel(user.experience_level)}
-              </Badge>
-            )}
+              </Badge>}
           </div>
-          {user.bio && (
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{user.bio}</p>
-          )}
+          {user.bio && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{user.bio}</p>}
         </div>
 
-        {user.friendship_status === 'none' && (
-          <Button
-            size="sm"
-            onClick={() => sendFriendRequest(user.user_id)}
-          >
+        {user.friendship_status === 'none' && <Button size="sm" onClick={() => sendFriendRequest(user.user_id)}>
             <UserPlus size={16} className="mr-1" />
             Adicionar
-          </Button>
-        )}
+          </Button>}
 
-        {user.friendship_status === 'pending' && user.is_requester && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => cancelFriendRequest(user.user_id)}
-          >
+        {user.friendship_status === 'pending' && user.is_requester && <Button variant="outline" size="sm" onClick={() => cancelFriendRequest(user.user_id)}>
             Cancelar
-          </Button>
-        )}
+          </Button>}
 
-        {user.friendship_status === 'pending' && !user.is_requester && (
-          <Badge variant="secondary">Convite recebido</Badge>
-        )}
+        {user.friendship_status === 'pending' && !user.is_requester && <Badge variant="secondary">Convite recebido</Badge>}
 
-        {user.friendship_status === 'accepted' && (
-          <Badge variant="default">
+        {user.friendship_status === 'accepted' && <Badge variant="default">
             <UserCheck size={12} className="mr-1" />
             Amigos
-          </Badge>
-        )}
+          </Badge>}
       </div>
-    </Card>
-  );
-
+    </Card>;
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background p-4 md:p-6">
+    return <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
             <div className="animate-pulse space-y-4">
@@ -251,12 +203,9 @@ const Friends = () => {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
+  return <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -276,30 +225,19 @@ const Friends = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <Search size={20} className="text-muted-foreground" />
-              <Input
-                placeholder="Buscar usuários por nome ou nickname..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="flex-1"
-              />
+              <Input placeholder="Buscar usuários por nome ou nickname..." value={searchQuery} onChange={e => handleSearch(e.target.value)} className="flex-1" />
             </div>
 
-            {isSearching && (
-              <div className="text-center py-4">
+            {isSearching && <div className="text-center py-4">
                 <div className="animate-pulse text-sm text-muted-foreground">
                   Buscando usuários...
                 </div>
-              </div>
-            )}
+              </div>}
 
-            {searchResults.length > 0 && (
-              <div className="space-y-3">
+            {searchResults.length > 0 && <div className="space-y-3">
                 <h3 className="font-semibold">Resultados da busca</h3>
-                {searchResults.map((user) => (
-                  <SearchResultCard key={user.user_id} user={user} />
-                ))}
-              </div>
-            )}
+                {searchResults.map(user => <SearchResultCard key={user.user_id} user={user} />)}
+              </div>}
           </div>
         </Card>
 
@@ -327,8 +265,7 @@ const Friends = () => {
                 <h2 className="text-xl font-semibold">Meus Amigos</h2>
               </div>
 
-              {friends.length === 0 ? (
-                <Card className="floating-card p-8 text-center">
+              {friends.length === 0 ? <Card className="floating-card p-8 text-center">
                   <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">Nenhum amigo ainda</h3>
                   <p className="text-muted-foreground mb-4">
@@ -338,14 +275,9 @@ const Friends = () => {
                     <Search className="mr-2" size={16} />
                     Buscar Amigos
                   </Button>
-                </Card>
-              ) : (
-                <div className="space-y-3">
-                  {friends.map((friend) => (
-                    <FriendCard key={friend.id} friend={friend} />
-                  ))}
-                </div>
-              )}
+                </Card> : <div className="space-y-3">
+                  {friends.map(friend => <FriendCard key={friend.id} friend={friend} />)}
+                </div>}
             </div>
           </TabsContent>
 
@@ -356,21 +288,15 @@ const Friends = () => {
                 <h2 className="text-xl font-semibold">Solicitações de Amizade</h2>
               </div>
 
-              {pendingRequests.length === 0 ? (
-                <Card className="floating-card p-8 text-center">
+              {pendingRequests.length === 0 ? <Card className="floating-card p-8 text-center">
                   <UserPlus className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">Nenhuma solicitação</h3>
                   <p className="text-muted-foreground">
                     Você não tem solicitações de amizade pendentes.
                   </p>
-                </Card>
-              ) : (
-                <div className="space-y-3">
-                  {pendingRequests.map((request) => (
-                    <RequestCard key={request.id} request={request} />
-                  ))}
-                </div>
-              )}
+                </Card> : <div className="space-y-3">
+                  {pendingRequests.map(request => <RequestCard key={request.id} request={request} />)}
+                </div>}
             </div>
           </TabsContent>
 
@@ -379,40 +305,26 @@ const Friends = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Notificações</h2>
-                {unreadCount > 0 && (
-                  <Button variant="outline" size="sm" onClick={markAllAsRead}>
+                {unreadCount > 0 && <Button variant="outline" size="sm" onClick={markAllAsRead}>
                     Marcar todas como lidas
-                  </Button>
-                )}
+                  </Button>}
               </div>
 
-              {notifications.length === 0 ? (
-                <Card className="floating-card p-8 text-center">
+              {notifications.length === 0 ? <Card className="floating-card p-8 text-center">
                   <BellOff className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">Nenhuma notificação</h3>
                   <p className="text-muted-foreground">
                     Você está em dia com todas as suas notificações.
                   </p>
-                </Card>
-              ) : (
-                <div className="space-y-3">
-                  {notifications.map((notification) => (
-                    <Card
-                      key={notification.id}
-                      className={`floating-card p-4 cursor-pointer transition-all duration-300 ${
-                        !notification.read ? 'border-primary/50 bg-primary/5' : ''
-                      }`}
-                      onClick={() => !notification.read && markAsRead(notification.id)}
-                    >
+                </Card> : <div className="space-y-3">
+                  {notifications.map(notification => <Card key={notification.id} className={`floating-card p-4 cursor-pointer transition-all duration-300 ${!notification.read ? 'border-primary/50 bg-primary/5' : ''}`} onClick={() => !notification.read && markAsRead(notification.id)}>
                       <div className="flex items-start gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className={`font-semibold ${!notification.read ? 'text-primary' : ''}`}>
                               {notification.title}
                             </h3>
-                            {!notification.read && (
-                              <Badge variant="default" className="text-xs">Nova</Badge>
-                            )}
+                            {!notification.read && <Badge variant="default" className="text-xs">Nova</Badge>}
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
                             {notification.message}
@@ -421,27 +333,19 @@ const Friends = () => {
                             {formatTimeAgo(notification.created_at)}
                           </span>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteNotification(notification.id);
-                          }}
-                        >
+                        <Button variant="ghost" size="sm" onClick={e => {
+                    e.stopPropagation();
+                    deleteNotification(notification.id);
+                  }}>
                           <X size={16} />
                         </Button>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                    </Card>)}
+                </div>}
             </div>
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Friends;
