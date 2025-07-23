@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Workout, WorkoutExercise } from '@/hooks/useWorkouts';
-
 interface UserProfile {
   id: string;
   user_id: string;
@@ -21,7 +20,6 @@ interface UserProfile {
   height: number;
   weight: number;
 }
-
 interface UserAchievement {
   id: string;
   name: string;
@@ -30,42 +28,45 @@ interface UserAchievement {
   category: string;
   earned_at: string;
 }
-
 interface UserStats {
   total_workouts: number;
   total_weight_lifted: number;
   current_streak: number;
   longest_streak: number;
 }
-
 export const FriendProfile = () => {
-  const { userId } = useParams<{ userId: string }>();
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const {
+    userId
+  } = useParams<{
+    userId: string;
+  }>();
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (!userId || !user) return;
-
     const fetchUserData = async () => {
       try {
         // Buscar perfil do usuário
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-
+        const {
+          data: profileData,
+          error: profileError
+        } = await supabase.from('profiles').select('*').eq('user_id', userId).single();
         if (profileError) throw profileError;
 
         // Buscar conquistas do usuário
-        const { data: achievementsData, error: achievementsError } = await supabase
-          .from('user_achievements')
-          .select(`
+        const {
+          data: achievementsData,
+          error: achievementsError
+        } = await supabase.from('user_achievements').select(`
             achievements (
               id,
               name,
@@ -74,51 +75,44 @@ export const FriendProfile = () => {
               category
             ),
             earned_at
-          `)
-          .eq('user_id', userId)
-          .order('earned_at', { ascending: false });
-
+          `).eq('user_id', userId).order('earned_at', {
+          ascending: false
+        });
         if (achievementsError) throw achievementsError;
 
         // Buscar estatísticas do usuário
-        const { data: statsData, error: statsError } = await supabase
-          .from('workout_stats')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-
+        const {
+          data: statsData,
+          error: statsError
+        } = await supabase.from('workout_stats').select('*').eq('user_id', userId).single();
         if (statsError) throw statsError;
 
         // Buscar treinos do usuário
-        const { data: workoutsData, error: workoutsError } = await supabase
-          .from('workouts')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-
+        const {
+          data: workoutsData,
+          error: workoutsError
+        } = await supabase.from('workouts').select('*').eq('user_id', userId).order('created_at', {
+          ascending: false
+        });
         if (workoutsError) throw workoutsError;
 
         // Buscar exercícios de cada treino
-        const workoutsWithExercises = await Promise.all(
-          workoutsData?.map(async (workout) => {
-            const { data: exercises, error: exercisesError } = await supabase
-              .from('workout_exercises')
-              .select('*')
-              .eq('workout_id', workout.id)
-              .order('exercise_order', { ascending: true });
-
-            if (exercisesError) throw exercisesError;
-
-            return {
-              id: workout.id,
-              name: workout.name,
-              description: workout.description,
-              day_of_week: workout.day_of_week,
-              exercises: exercises || []
-            };
-          }) || []
-        );
-
+        const workoutsWithExercises = await Promise.all(workoutsData?.map(async workout => {
+          const {
+            data: exercises,
+            error: exercisesError
+          } = await supabase.from('workout_exercises').select('*').eq('workout_id', workout.id).order('exercise_order', {
+            ascending: true
+          });
+          if (exercisesError) throw exercisesError;
+          return {
+            id: workout.id,
+            name: workout.name,
+            description: workout.description,
+            day_of_week: workout.day_of_week,
+            exercises: exercises || []
+          };
+        }) || []);
         setProfile(profileData);
         setAchievements(achievementsData?.map(ua => ({
           id: ua.achievements.id,
@@ -136,40 +130,38 @@ export const FriendProfile = () => {
         setLoading(false);
       }
     };
-
     fetchUserData();
   }, [userId, user]);
-
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'workout': return <Target className="text-secondary" size={16} />;
-      case 'strength': return <Zap className="text-accent" size={16} />;
-      case 'streak': return <Star className="text-destructive" size={16} />;
-      case 'milestone': return <Trophy className="text-primary" size={16} />;
-      default: return <Trophy className="text-muted-foreground" size={16} />;
+      case 'workout':
+        return <Target className="text-secondary" size={16} />;
+      case 'strength':
+        return <Zap className="text-accent" size={16} />;
+      case 'streak':
+        return <Star className="text-destructive" size={16} />;
+      case 'milestone':
+        return <Trophy className="text-primary" size={16} />;
+      default:
+        return <Trophy className="text-muted-foreground" size={16} />;
     }
   };
-
   const getInitials = (name?: string) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
-
   const copyWorkout = async (workout: Workout) => {
     if (!user) return;
-
     try {
       // Criar uma cópia do treino para o usuário atual
-      const { data: newWorkout, error: workoutError } = await supabase
-        .from('workouts')
-        .insert({
-          user_id: user.id,
-          name: `${workout.name} (copiado)`,
-          description: workout.description
-        })
-        .select()
-        .single();
-
+      const {
+        data: newWorkout,
+        error: workoutError
+      } = await supabase.from('workouts').insert({
+        user_id: user.id,
+        name: `${workout.name} (copiado)`,
+        description: workout.description
+      }).select().single();
       if (workoutError) throw workoutError;
 
       // Copiar exercícios
@@ -182,14 +174,11 @@ export const FriendProfile = () => {
           weight: exercise.weight,
           exercise_order: index
         }));
-
-        const { error: exercisesError } = await supabase
-          .from('workout_exercises')
-          .insert(exercisesToInsert);
-
+        const {
+          error: exercisesError
+        } = await supabase.from('workout_exercises').insert(exercisesToInsert);
         if (exercisesError) throw exercisesError;
       }
-
       toast({
         title: "Treino copiado!",
         description: `O treino "${workout.name}" foi copiado para seus treinos.`
@@ -203,10 +192,8 @@ export const FriendProfile = () => {
       });
     }
   };
-
   const shareWorkout = (workout: Workout) => {
     const workoutText = `Treino: ${workout.name}\n\nExercícios:\n${workout.exercises.map(ex => `• ${ex.exercise_name}: ${ex.sets}x${ex.reps} - ${ex.weight}kg`).join('\n')}\n\nCompartilhado do BroFit 💪`;
-    
     if (navigator.share) {
       navigator.share({
         title: `Treino: ${workout.name}`,
@@ -220,34 +207,26 @@ export const FriendProfile = () => {
       });
     }
   };
-
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-6">
+    return <div className="container mx-auto px-4 py-6">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-muted rounded w-48"></div>
           <div className="h-64 bg-muted rounded"></div>
           <div className="h-48 bg-muted rounded"></div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (!profile) {
-    return (
-      <div className="container mx-auto px-4 py-6">
+    return <div className="container mx-auto px-4 py-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Usuário não encontrado</h1>
           <Link to="/friends">
             <Button variant="outline">Voltar para Amigos</Button>
           </Link>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+  return <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link to="/friends">
@@ -277,71 +256,32 @@ export const FriendProfile = () => {
           </div>
 
           <div className="flex-1">
-            {profile.bio && (
-              <div className="mb-4">
+            {profile.bio && <div className="mb-4">
                 <h3 className="font-semibold mb-2">Sobre</h3>
                 <p className="text-muted-foreground">{profile.bio}</p>
-              </div>
-            )}
+              </div>}
 
-            {profile.fitness_goal && (
-              <div className="mb-4">
+            {profile.fitness_goal && <div className="mb-4">
                 <h3 className="font-semibold mb-2">Objetivo</h3>
                 <p className="text-muted-foreground">{profile.fitness_goal}</p>
-              </div>
-            )}
+              </div>}
 
-            {(profile.height || profile.weight) && (
-              <div className="grid grid-cols-2 gap-4">
-                {profile.height && (
-                  <div>
+            {(profile.height || profile.weight) && <div className="grid grid-cols-2 gap-4">
+                {profile.height && <div>
                     <h4 className="font-medium text-sm">Altura</h4>
                     <p className="text-muted-foreground">{profile.height} cm</p>
-                  </div>
-                )}
-                {profile.weight && (
-                  <div>
+                  </div>}
+                {profile.weight && <div>
                     <h4 className="font-medium text-sm">Peso</h4>
                     <p className="text-muted-foreground">{profile.weight} kg</p>
-                  </div>
-                )}
-              </div>
-            )}
+                  </div>}
+              </div>}
           </div>
         </div>
       </Card>
 
       {/* Estatísticas */}
-      {stats && (
-        <Card className="floating-card p-6">
-          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <TrendingUp size={20} />
-            Estatísticas
-          </h3>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-secondary/10 rounded-lg">
-              <div className="text-2xl font-bold text-primary">{stats.total_workouts}</div>
-              <div className="text-sm text-muted-foreground">Treinos</div>
-            </div>
-            
-            <div className="text-center p-4 bg-secondary/10 rounded-lg">
-              <div className="text-2xl font-bold text-primary">{Math.round(stats.total_weight_lifted)}kg</div>
-              <div className="text-sm text-muted-foreground">Peso Total</div>
-            </div>
-            
-            <div className="text-center p-4 bg-secondary/10 rounded-lg">
-              <div className="text-2xl font-bold text-primary">{stats.current_streak}</div>
-              <div className="text-sm text-muted-foreground">Sequência Atual</div>
-            </div>
-            
-            <div className="text-center p-4 bg-secondary/10 rounded-lg">
-              <div className="text-2xl font-bold text-primary">{stats.longest_streak}</div>
-              <div className="text-sm text-muted-foreground">Maior Sequência</div>
-            </div>
-          </div>
-        </Card>
-      )}
+      {stats}
 
       {/* Conquistas */}
       <Card className="floating-card p-6">
@@ -350,13 +290,8 @@ export const FriendProfile = () => {
           Conquistas ({achievements.length})
         </h3>
         
-        {achievements.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {achievements.map((achievement) => (
-              <div
-                key={achievement.id}
-                className="p-4 rounded-lg border bg-secondary/5 border-secondary/20"
-              >
+        {achievements.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {achievements.map(achievement => <div key={achievement.id} className="p-4 rounded-lg border bg-secondary/5 border-secondary/20">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-2xl">{achievement.icon}</span>
                   {getCategoryIcon(achievement.category)}
@@ -374,15 +309,11 @@ export const FriendProfile = () => {
                   <Calendar size={12} />
                   {new Date(achievement.earned_at).toLocaleDateString('pt-BR')}
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
+              </div>)}
+          </div> : <div className="text-center py-8 text-muted-foreground">
             <Trophy size={48} className="mx-auto mb-4 opacity-50" />
             <p>Nenhuma conquista ainda</p>
-          </div>
-        )}
+          </div>}
       </Card>
 
       {/* Treinos */}
@@ -392,31 +323,19 @@ export const FriendProfile = () => {
           Treinos ({workouts.length})
         </h3>
         
-        {workouts.length > 0 ? (
-          <div className="space-y-4">
-            {workouts.map((workout) => (
-              <Card key={workout.id} className="p-4 border border-secondary/20">
+        {workouts.length > 0 ? <div className="space-y-4">
+            {workouts.map(workout => <Card key={workout.id} className="p-4 border border-secondary/20">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-semibold">{workout.name}</h4>
-                    {workout.description && (
-                      <p className="text-sm text-muted-foreground">{workout.description}</p>
-                    )}
+                    {workout.description && <p className="text-sm text-muted-foreground">{workout.description}</p>}
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyWorkout(workout)}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => copyWorkout(workout)}>
                       <Copy size={16} className="mr-1" />
                       Copiar
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => shareWorkout(workout)}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => shareWorkout(workout)}>
                       <Share2 size={16} className="mr-1" />
                       Compartilhar
                     </Button>
@@ -424,8 +343,7 @@ export const FriendProfile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  {workout.exercises.map((exercise, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-secondary/10 rounded">
+                  {workout.exercises.map((exercise, index) => <div key={index} className="flex items-center justify-between p-2 bg-secondary/10 rounded">
                       <div className="flex items-center gap-2">
                         <Weight size={16} className="text-muted-foreground" />
                         <span className="font-medium">{exercise.exercise_name}</span>
@@ -433,19 +351,13 @@ export const FriendProfile = () => {
                       <div className="text-sm text-muted-foreground">
                         {exercise.sets}x{exercise.reps} - {exercise.weight}kg
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
+              </Card>)}
+          </div> : <div className="text-center py-8 text-muted-foreground">
             <Dumbbell size={48} className="mx-auto mb-4 opacity-50" />
             <p>Nenhum treino compartilhado</p>
-          </div>
-        )}
+          </div>}
       </Card>
-    </div>
-  );
+    </div>;
 };
