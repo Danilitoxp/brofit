@@ -135,7 +135,7 @@ const Dashboard = () => {
           navigate('/workouts');
         }
       }} disabled={todayWorkout.exercises === 0}>
-          {todayWorkout.exercises > 0 ? todayWorkout.completed ? "✅ Treino Concluído" : "🔥 Iniciar Treino" : "📝 Criar Treino"}
+          {todayWorkout.exercises > 0 ? todayWorkout.completed ? "Treino Concluído" : "Iniciar Treino" : "Criar Treino"}
         </Button>
       </div>
 
