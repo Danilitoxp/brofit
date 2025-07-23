@@ -44,7 +44,13 @@ export const useRanking = () => {
       if (error) throw error;
 
       const uniqueExercises = [...new Set(data?.map(record => record.exercise_name) || [])];
-      setExerciseNames(uniqueExercises);
+      // Sempre colocar Supino Reto primeiro se existir
+      const sortedExercises = uniqueExercises.sort((a, b) => {
+        if (a === 'Supino Reto') return -1;
+        if (b === 'Supino Reto') return 1;
+        return a.localeCompare(b);
+      });
+      setExerciseNames(sortedExercises);
     } catch (error) {
       console.error('Erro ao buscar exercícios:', error);
     } finally {
@@ -106,21 +112,32 @@ export const useRanking = () => {
     }
   };
 
-  // Buscar ranking geral (baseado na soma dos pesos máximos)
+  // Buscar ranking geral (todas as pessoas públicas por exercício)
   const getGeneralRanking = async (limit = 50): Promise<RankingEntry[]> => {
     try {
-      // Fallback para ranking simples já que não temos a função RPC
+      // Se não há exercícios, usar Supino Reto como padrão ou primeiro exercício disponível
+      let defaultExercise = 'Supino Reto';
+      if (exerciseNames.length > 0 && !exerciseNames.includes('Supino Reto')) {
+        defaultExercise = exerciseNames[0];
+      }
+
       const { data, error } = await supabase
         .from('exercise_records')
         .select(`
           user_id,
-          max_weight
-        `);
+          max_weight,
+          max_reps,
+          achieved_at
+        `)
+        .eq('exercise_name', defaultExercise)
+        .order('max_weight', { ascending: false })
+        .order('max_reps', { ascending: false })
+        .limit(limit);
 
       if (error) throw error;
 
       // Get user profiles for the results
-      const userIds = [...new Set(data?.map(record => record.user_id) || [])];
+      const userIds = data?.map(record => record.user_id) || [];
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url, is_public')
@@ -132,35 +149,18 @@ export const useRanking = () => {
         profiles?.some(profile => profile.user_id === record.user_id)
       ) || [];
 
-      // Agrupar por usuário e somar pesos
-      const userTotals = publicData?.reduce((acc: any, record: any) => {
+      return publicData?.map((record: any, index) => {
         const profile = profiles?.find(p => p.user_id === record.user_id);
-        if (!acc[record.user_id]) {
-          acc[record.user_id] = {
-            user_id: record.user_id,
-            display_name: profile?.display_name || 'Usuário',
-            avatar_url: profile?.avatar_url,
-            total_weight: 0
-          };
-        }
-        acc[record.user_id].total_weight += parseFloat(record.max_weight);
-        return acc;
-      }, {});
-
-      const sortedUsers = Object.values(userTotals || {})
-        .sort((a: any, b: any) => b.total_weight - a.total_weight)
-        .slice(0, limit);
-
-      return sortedUsers.map((user: any, index) => ({
-        user_id: user.user_id,
-        display_name: user.display_name,
-        avatar_url: user.avatar_url,
-        max_weight: 0,
-        max_reps: 0,
-        achieved_at: '',
-        total_score: user.total_weight,
-        rank: index + 1
-      }));
+        return {
+          user_id: record.user_id,
+          display_name: profile?.display_name || 'Usuário',
+          avatar_url: profile?.avatar_url,
+          max_weight: record.max_weight,
+          max_reps: record.max_reps,
+          achieved_at: record.achieved_at,
+          rank: index + 1
+        };
+      }) || [];
     } catch (error) {
       console.error('Erro ao buscar ranking geral:', error);
       toast({

@@ -55,9 +55,12 @@ const Ranking = () => {
     }
   };
   
+  
   useEffect(() => {
     if (exerciseNames.length > 0 && !selectedExercise) {
-      setSelectedExercise(exerciseNames[0]);
+      // Usar Supino Reto como padrão ou primeiro exercício disponível
+      const defaultExercise = exerciseNames.includes('Supino Reto') ? 'Supino Reto' : exerciseNames[0];
+      setSelectedExercise(defaultExercise);
     }
   }, [exerciseNames]);
   
@@ -142,11 +145,8 @@ const Ranking = () => {
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold truncate">{entry.display_name}</h3>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  {showTotalScore ? (
-                    <span>Total: {entry.total_score?.toFixed(1) || 0}kg</span>
-                  ) : (
-                    <span className="font-bold">Peso: {entry.max_weight}kg</span>
-                  )}
+                  <span className="font-bold">Peso: {entry.max_weight}kg</span>
+                  {entry.max_reps && <span>• {entry.max_reps} reps</span>}
                 </div>
               </div>
             </Link>
@@ -237,7 +237,9 @@ const Ranking = () => {
           <TabsContent value="general" className="mt-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Ranking Geral</h2>
+                <h2 className="text-xl font-semibold">
+                  Ranking Geral - {exerciseNames.includes('Supino Reto') ? 'Supino Reto' : exerciseNames[0] || 'Exercício'}
+                </h2>
                 {loadingRanking && (
                   <div className="animate-pulse text-sm text-muted-foreground">
                     Carregando...
@@ -245,9 +247,9 @@ const Ranking = () => {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                Baseado na soma dos recordes máximos de todos os exercícios
+                Ranking por exercício - mostrando todas as pessoas com perfil público
               </p>
-              <RankingList data={generalRanking} showTotalScore={true} />
+              <RankingList data={generalRanking} showTotalScore={false} />
             </div>
           </TabsContent>
 

@@ -17,7 +17,6 @@ interface UserProfile {
   nickname: string;
   bio: string;
   avatar_url: string;
-  experience_level: string;
   fitness_goal: string;
   height: number;
   weight: number;
@@ -274,13 +273,6 @@ export const FriendProfile = () => {
             <div className="text-center md:text-left">
               <h2 className="text-xl font-bold">{profile.display_name}</h2>
               <p className="text-muted-foreground">@{profile.nickname}</p>
-              {profile.experience_level && (
-                <Badge variant="secondary" className="mt-2">
-                  {profile.experience_level === 'beginner' && 'Iniciante'}
-                  {profile.experience_level === 'intermediate' && 'Intermediário'}
-                  {profile.experience_level === 'advanced' && 'Avançado'}
-                </Badge>
-              )}
             </div>
           </div>
 
