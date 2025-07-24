@@ -49,14 +49,14 @@ const StartWorkout = () => {
   const [seriesData, setSeriesData] = useState(() => {
     const initialData = {};
     exercises.forEach((ex, exIndex) => {
-      for (let setIndex = 0; setIndex < ex.sets; setIndex++) {
+      ex.sets.forEach((set, setIndex) => {
         const key = `${exIndex}-${setIndex}`;
         initialData[key] = {
-          weight: '', // Começar vazio para permitir entrada livre
-          reps: '', // Começar vazio para permitir entrada livre
+          weight: '',
+          reps: '',
           completed: false
         };
-      }
+      });
     });
     return initialData;
   });
@@ -66,20 +66,20 @@ const StartWorkout = () => {
     if (exercises.length > 0) {
       const newData = {};
       exercises.forEach((ex, exIndex) => {
-        for (let setIndex = 0; setIndex < ex.sets; setIndex++) {
+        ex.sets.forEach((set, setIndex) => {
           const key = `${exIndex}-${setIndex}`;
           // Só inicializar se ainda não existe dados para essa série
           if (!seriesData[key]) {
             newData[key] = {
-              weight: '', // Começar vazio
-              reps: '', // Começar vazio
+              weight: '',
+              reps: '',
               completed: false
             };
           } else {
             // Manter dados existentes
             newData[key] = { ...seriesData[key] };
           }
-        }
+        });
       });
       setSeriesData(newData);
     }
@@ -351,11 +351,11 @@ const StartWorkout = () => {
           <Card key={exerciseIndex} className="floating-card p-4">
             <div className="mb-4">
               <h3 className="font-semibold text-lg mb-1">{exercise.exercise_name}</h3>
-              <p className="text-sm text-muted-foreground">{exercise.sets} séries</p>
+              <p className="text-sm text-muted-foreground">{exercise.sets.length} séries</p>
             </div>
             
             <div className="space-y-3">
-              {Array.from({ length: exercise.sets }, (_, setIndex) => {
+              {exercise.sets.map((set, setIndex) => {
                 const key = `${exerciseIndex}-${setIndex}`;
                 const seriesCompleted = seriesData[key]?.completed;
                 

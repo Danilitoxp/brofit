@@ -89,35 +89,52 @@ export const FriendProfile = () => {
 
         if (statsError) throw statsError;
 
-        // Buscar treinos do usuário
+        // Buscar treinos com exercícios e séries
         const { data: workoutsData, error: workoutsError } = await supabase
           .from('workouts')
-          .select('*')
+          .select(`
+            *,
+            workout_exercises!inner (
+              id,
+              exercise_name,
+              exercise_order,
+              workout_sets (
+                id,
+                set_number,
+                reps,
+                weight,
+                completed
+              )
+            )
+          `)
           .eq('user_id', userId)
-          .order('created_at', { ascending: false });
+          .order('day_of_week', { nullsFirst: false });
 
         if (workoutsError) throw workoutsError;
 
-        // Buscar exercícios de cada treino
-        const workoutsWithExercises = await Promise.all(
-          workoutsData?.map(async (workout) => {
-            const { data: exercises, error: exercisesError } = await supabase
-              .from('workout_exercises')
-              .select('*')
-              .eq('workout_id', workout.id)
-              .order('exercise_order', { ascending: true });
-
-            if (exercisesError) throw exercisesError;
-
-            return {
-              id: workout.id,
-              name: workout.name,
-              description: workout.description,
-              day_of_week: workout.day_of_week,
-              exercises: exercises || []
-            };
-          }) || []
-        );
+        // Transformar dados para o formato esperado
+        const formattedWorkouts: Workout[] = workoutsData?.map(workout => ({
+          id: workout.id,
+          name: workout.name,
+          description: workout.description,
+          day_of_week: workout.day_of_week,
+          exercises: workout.workout_exercises
+            .sort((a, b) => a.exercise_order - b.exercise_order)
+            .map(exercise => ({
+              id: exercise.id,
+              exercise_name: exercise.exercise_name,
+              exercise_order: exercise.exercise_order,
+              sets: exercise.workout_sets
+                .sort((a, b) => a.set_number - b.set_number)
+                .map(set => ({
+                  id: set.id,
+                  set_number: set.set_number,
+                  reps: set.reps,
+                  weight: set.weight,
+                  completed: set.completed
+                }))
+            }))
+        })) || [];
 
         setProfile(profileData);
         setAchievements(achievementsData?.map(ua => ({
@@ -129,7 +146,7 @@ export const FriendProfile = () => {
           earned_at: ua.earned_at
         })) || []);
         setStats(statsData);
-        setWorkouts(workoutsWithExercises);
+        setWorkouts(formattedWorkouts);
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -172,22 +189,37 @@ export const FriendProfile = () => {
 
       if (workoutError) throw workoutError;
 
-      // Copiar exercícios
+      // Copiar exercícios e suas séries
       if (workout.exercises.length > 0) {
-        const exercisesToInsert = workout.exercises.map((exercise, index) => ({
-          workout_id: newWorkout.id,
-          exercise_name: exercise.exercise_name,
-          sets: exercise.sets,
-          reps: exercise.reps,
-          weight: exercise.weight,
-          exercise_order: index
-        }));
+        for (const exercise of workout.exercises) {
+          const { data: exerciseData, error: exerciseError } = await supabase
+            .from('workout_exercises')
+            .insert({
+              workout_id: newWorkout.id,
+              exercise_name: exercise.exercise_name,
+              exercise_order: exercise.exercise_order
+            })
+            .select()
+            .single();
 
-        const { error: exercisesError } = await supabase
-          .from('workout_exercises')
-          .insert(exercisesToInsert);
+          if (exerciseError) throw exerciseError;
 
-        if (exercisesError) throw exercisesError;
+          // Criar séries para cada exercício
+          if (exercise.sets && exercise.sets.length > 0) {
+            const setsToInsert = exercise.sets.map(set => ({
+              workout_exercise_id: exerciseData.id,
+              set_number: set.set_number,
+              reps: set.reps,
+              weight: set.weight
+            }));
+
+            const { error: setsError } = await supabase
+              .from('workout_sets')
+              .insert(setsToInsert);
+
+            if (setsError) throw setsError;
+          }
+        }
       }
 
       toast({
@@ -205,7 +237,12 @@ export const FriendProfile = () => {
   };
 
   const shareWorkout = (workout: Workout) => {
-    const workoutText = `Treino: ${workout.name}\n\nExercícios:\n${workout.exercises.map(ex => `• ${ex.exercise_name}: ${ex.sets}x${ex.reps} - ${ex.weight}kg`).join('\n')}\n\nCompartilhado do BroFit 💪`;
+    const exerciseText = workout.exercises.map(ex => {
+      const setsText = ex.sets.map(set => `${set.reps} reps x ${set.weight}kg`).join(', ');
+      return `• ${ex.exercise_name}: ${setsText}`;
+    }).join('\n');
+    
+    const workoutText = `Treino: ${workout.name}\n\nExercícios:\n${exerciseText}\n\nCompartilhado do BroFit 💪`;
     
     if (navigator.share) {
       navigator.share({
@@ -431,7 +468,7 @@ export const FriendProfile = () => {
                         <span className="font-medium">{exercise.exercise_name}</span>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {exercise.sets}x{exercise.reps} - {exercise.weight}kg
+                        {exercise.sets.length} séries
                       </div>
                     </div>
                   ))}

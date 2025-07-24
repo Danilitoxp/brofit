@@ -182,8 +182,7 @@ const Workouts = () => {
                               <span className="font-medium truncate">{exercise.exercise_name}</span>
                             </div>
                             <div className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                              {exercise.sets}x{exercise.reps}
-                              {exercise.weight > 0 && <span className="text-primary font-medium"> • {exercise.weight}kg</span>}
+                              {exercise.sets.length} séries
                             </div>
                           </div>)}
                         {workout.exercises.length > 5 && <div className="text-center py-2">
