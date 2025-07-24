@@ -52,8 +52,8 @@ const StartWorkout = () => {
       for (let setIndex = 0; setIndex < ex.sets; setIndex++) {
         const key = `${exIndex}-${setIndex}`;
         initialData[key] = {
-          weight: ex.weight || 0,
-          reps: ex.reps,
+          weight: '', // Começar vazio para permitir entrada livre
+          reps: '', // Começar vazio para permitir entrada livre
           completed: false
         };
       }
@@ -68,11 +68,17 @@ const StartWorkout = () => {
       exercises.forEach((ex, exIndex) => {
         for (let setIndex = 0; setIndex < ex.sets; setIndex++) {
           const key = `${exIndex}-${setIndex}`;
-          newData[key] = {
-            weight: ex.weight || 0,
-            reps: ex.reps,
-            completed: false
-          };
+          // Só inicializar se ainda não existe dados para essa série
+          if (!seriesData[key]) {
+            newData[key] = {
+              weight: '', // Começar vazio
+              reps: '', // Começar vazio
+              completed: false
+            };
+          } else {
+            // Manter dados existentes
+            newData[key] = { ...seriesData[key] };
+          }
         }
       });
       setSeriesData(newData);
@@ -124,19 +130,41 @@ const StartWorkout = () => {
   };
 
   const updateWeight = (key, weight) => {
+    // Permitir string vazia para poder limpar o campo
+    if (weight === '') {
+      setSeriesData(prev => ({
+        ...prev,
+        [key]: { ...prev[key], weight: '' }
+      }));
+      return;
+    }
+    
     const weightValue = parseFloat(weight);
-    setSeriesData(prev => ({
-      ...prev,
-      [key]: { ...prev[key], weight: weightValue >= 0 ? weightValue : 0 }
-    }));
+    if (!isNaN(weightValue) && weightValue >= 0) {
+      setSeriesData(prev => ({
+        ...prev,
+        [key]: { ...prev[key], weight: weightValue }
+      }));
+    }
   };
 
   const updateReps = (key, reps) => {
+    // Permitir string vazia para poder limpar o campo
+    if (reps === '') {
+      setSeriesData(prev => ({
+        ...prev,
+        [key]: { ...prev[key], reps: '' }
+      }));
+      return;
+    }
+    
     const repsValue = parseInt(reps);
-    setSeriesData(prev => ({
-      ...prev,
-      [key]: { ...prev[key], reps: repsValue >= 1 ? repsValue : 1 }
-    }));
+    if (!isNaN(repsValue) && repsValue >= 1) {
+      setSeriesData(prev => ({
+        ...prev,
+        [key]: { ...prev[key], reps: repsValue }
+      }));
+    }
   };
 
   const totalSeries = Object.keys(seriesData).length;
@@ -166,7 +194,11 @@ const StartWorkout = () => {
       // Calcular total de peso levantado no treino
       const totalWeight = Object.entries(seriesData).reduce((total, [key, data]: [string, any]) => {
         if (data.completed && data.weight && data.reps) {
-          return total + (data.weight * data.reps);
+          const weight = typeof data.weight === 'string' ? parseFloat(data.weight) : data.weight;
+          const reps = typeof data.reps === 'string' ? parseInt(data.reps) : data.reps;
+          if (!isNaN(weight) && !isNaN(reps)) {
+            return total + (weight * reps);
+          }
         }
         return total;
       }, 0);
@@ -175,14 +207,19 @@ const StartWorkout = () => {
       const exerciseRecords = {};
       Object.entries(seriesData).forEach(([key, data]: [string, any]) => {
         if (data.completed && data.weight && data.reps) {
-          const [exerciseIndex] = key.split('-');
-          const exercise = exercises[parseInt(exerciseIndex)];
-          const exerciseName = exercise.exercise_name;
+          const weight = typeof data.weight === 'string' ? parseFloat(data.weight) : data.weight;
+          const reps = typeof data.reps === 'string' ? parseInt(data.reps) : data.reps;
           
-          if (!exerciseRecords[exerciseName] || 
-              (data.weight > exerciseRecords[exerciseName].weight) ||
-              (data.weight === exerciseRecords[exerciseName].weight && data.reps > exerciseRecords[exerciseName].reps)) {
-            exerciseRecords[exerciseName] = { weight: data.weight, reps: data.reps };
+          if (!isNaN(weight) && !isNaN(reps)) {
+            const [exerciseIndex] = key.split('-');
+            const exercise = exercises[parseInt(exerciseIndex)];
+            const exerciseName = exercise.exercise_name;
+            
+            if (!exerciseRecords[exerciseName] || 
+                (weight > exerciseRecords[exerciseName].weight) ||
+                (weight === exerciseRecords[exerciseName].weight && reps > exerciseRecords[exerciseName].reps)) {
+              exerciseRecords[exerciseName] = { weight, reps };
+            }
           }
         }
       });
@@ -360,10 +397,10 @@ const StartWorkout = () => {
                           type="number"
                           min="0"
                           step="0.5"
-                          value={seriesData[key]?.weight || ''}
+                          value={seriesData[key]?.weight ?? ''}
                           onChange={(e) => updateWeight(key, e.target.value)}
                           className="mt-1"
-                          placeholder="0"
+                          placeholder="Peso (kg)"
                           disabled={seriesCompleted}
                         />
                       </div>
@@ -372,10 +409,10 @@ const StartWorkout = () => {
                         <Input
                           type="number"
                           min="1"
-                          value={seriesData[key]?.reps || ''}
+                          value={seriesData[key]?.reps ?? ''}
                           onChange={(e) => updateReps(key, e.target.value)}
                           className="mt-1"
-                          placeholder="1"
+                          placeholder="Repetições"
                           disabled={seriesCompleted}
                         />
                       </div>
