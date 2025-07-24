@@ -22,6 +22,7 @@ const StartWorkout = () => {
   const [time, setTime] = useState(0);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [lastCompletedSeries, setLastCompletedSeries] = useState<string | null>(null);
+  const [restDuration, setRestDuration] = useState(90); // tempo de descanso em segundos
 
   // Buscar o treino - pode vir do state ou buscar o treino de hoje
   const getWorkout = () => {
@@ -123,16 +124,18 @@ const StartWorkout = () => {
   };
 
   const updateWeight = (key, weight) => {
+    const weightValue = parseFloat(weight);
     setSeriesData(prev => ({
       ...prev,
-      [key]: { ...prev[key], weight: parseInt(weight) || 0 }
+      [key]: { ...prev[key], weight: weightValue >= 0 ? weightValue : 0 }
     }));
   };
 
   const updateReps = (key, reps) => {
+    const repsValue = parseInt(reps);
     setSeriesData(prev => ({
       ...prev,
-      [key]: { ...prev[key], reps: parseInt(reps) || 0 }
+      [key]: { ...prev[key], reps: repsValue >= 1 ? repsValue : 1 }
     }));
   };
 
@@ -355,20 +358,25 @@ const StartWorkout = () => {
                         <label className="text-xs text-muted-foreground">Peso (kg)</label>
                         <Input
                           type="number"
+                          min="0"
+                          step="0.5"
                           value={seriesData[key]?.weight || ''}
                           onChange={(e) => updateWeight(key, e.target.value)}
                           className="mt-1"
                           placeholder="0"
+                          disabled={seriesCompleted}
                         />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Repetições</label>
                         <Input
                           type="number"
+                          min="1"
                           value={seriesData[key]?.reps || ''}
                           onChange={(e) => updateReps(key, e.target.value)}
                           className="mt-1"
-                          placeholder="0"
+                          placeholder="1"
+                          disabled={seriesCompleted}
                         />
                       </div>
                     </div>
@@ -394,12 +402,32 @@ const StartWorkout = () => {
         </Button>
       </div>
 
+      {/* Rest Duration Selector */}
+      <Card className="floating-card p-4 mt-6">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Tempo de descanso:</span>
+          <div className="flex gap-2">
+            {[60, 90, 120, 180].map((duration) => (
+              <Button
+                key={duration}
+                variant={restDuration === duration ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => setRestDuration(duration)}
+                className="px-3 py-1 text-xs"
+              >
+                {duration < 120 ? `${duration}s` : `${duration/60}min`}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
       {/* Rest Timer */}
       <RestTimer
         isVisible={showRestTimer}
         onClose={() => setShowRestTimer(false)}
         onComplete={() => setShowRestTimer(false)}
-        duration={90} // 1.5 minutos
+        duration={restDuration}
       />
     </div>
   );
