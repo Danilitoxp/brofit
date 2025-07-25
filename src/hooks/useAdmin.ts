@@ -166,7 +166,7 @@ export const useAdmin = () => {
       const fileName = `exercises/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('avatars') // Usando o mesmo bucket por enquanto
+        .from('exercise-images')
         .upload(fileName, file, {
           upsert: true
         });
@@ -174,7 +174,7 @@ export const useAdmin = () => {
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
-        .from('avatars')
+        .from('exercise-images')
         .getPublicUrl(fileName);
 
       return data.publicUrl;
