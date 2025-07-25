@@ -10,14 +10,22 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { RestTimer } from "@/components/RestTimer";
-
 const StartWorkout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
-  const { workouts } = useWorkouts();
-  const { stats, updateStats } = useProfile();
-  const { user } = useAuth();
+  const {
+    toast
+  } = useToast();
+  const {
+    workouts
+  } = useWorkouts();
+  const {
+    stats,
+    updateStats
+  } = useProfile();
+  const {
+    user
+  } = useAuth();
   const [isActive, setIsActive] = useState(false);
   const [time, setTime] = useState(0);
   const [showRestTimer, setShowRestTimer] = useState(false);
@@ -29,19 +37,17 @@ const StartWorkout = () => {
     if (location.state?.workout) {
       return location.state.workout;
     }
-    
+
     // Se não tem workout no state, buscar treino de hoje
     const today = new Date().getDay(); // 0 = domingo, 1 = segunda, etc.
     const todayWorkout = workouts.find(w => w.day_of_week === today);
-    
+
     // Se não encontrou treino de hoje, retornar o primeiro treino disponível
     if (!todayWorkout && workouts.length > 0) {
       return workouts[0];
     }
-    
     return todayWorkout || null;
   };
-
   const currentWorkout = getWorkout();
   const exercises = currentWorkout?.exercises || [];
 
@@ -91,7 +97,6 @@ const StartWorkout = () => {
       navigate('/workouts');
       return;
     }
-    
     if (!exercises || exercises.length === 0) {
       toast({
         title: "Treino sem exercícios",
@@ -101,20 +106,20 @@ const StartWorkout = () => {
       navigate('/workouts');
     }
   }, [currentWorkout, exercises, navigate, toast]);
-
-  const formatTime = (seconds) => {
+  const formatTime = seconds => {
     const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const minutes = Math.floor(seconds % 3600 / 60);
     const secs = seconds % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-
-  const toggleSeries = (key) => {
+  const toggleSeries = key => {
     const wasCompleted = seriesData[key]?.completed;
-    
     setSeriesData(prev => ({
       ...prev,
-      [key]: { ...prev[key], completed: !prev[key].completed }
+      [key]: {
+        ...prev[key],
+        completed: !prev[key].completed
+      }
     }));
 
     // Se estava incompleto e agora está completo, mostrar timer de descanso
@@ -123,45 +128,52 @@ const StartWorkout = () => {
       setShowRestTimer(true);
     }
   };
-
   const updateWeight = (key, weight) => {
     // Permitir string vazia para poder limpar o campo
     if (weight === '') {
       setSeriesData(prev => ({
         ...prev,
-        [key]: { ...prev[key], weight: '' }
+        [key]: {
+          ...prev[key],
+          weight: ''
+        }
       }));
       return;
     }
-    
     const weightValue = parseFloat(weight);
     if (!isNaN(weightValue) && weightValue >= 0) {
       setSeriesData(prev => ({
         ...prev,
-        [key]: { ...prev[key], weight: weightValue }
+        [key]: {
+          ...prev[key],
+          weight: weightValue
+        }
       }));
     }
   };
-
   const updateReps = (key, reps) => {
     // Permitir string vazia para poder limpar o campo
     if (reps === '') {
       setSeriesData(prev => ({
         ...prev,
-        [key]: { ...prev[key], reps: '' }
+        [key]: {
+          ...prev[key],
+          reps: ''
+        }
       }));
       return;
     }
-    
     const repsValue = parseInt(reps);
     if (!isNaN(repsValue) && repsValue >= 1) {
       setSeriesData(prev => ({
         ...prev,
-        [key]: { ...prev[key], reps: repsValue }
+        [key]: {
+          ...prev[key],
+          reps: repsValue
+        }
       }));
     }
   };
-
   const totalSeries = Object.keys(seriesData).length;
   const completedSeries = Object.values(seriesData).filter((series: any) => series.completed).length;
 
@@ -179,12 +191,9 @@ const StartWorkout = () => {
       if (interval) clearInterval(interval);
     };
   }, [isActive, time]);
-
   const finishWorkout = async () => {
     if (completedSeries === 0) return;
-    
     setIsActive(false);
-    
     try {
       // Calcular total de peso levantado no treino
       const totalWeight = Object.entries(seriesData).reduce((total, [key, data]: [string, any]) => {
@@ -192,7 +201,7 @@ const StartWorkout = () => {
           const weight = typeof data.weight === 'string' ? parseFloat(data.weight) : data.weight;
           const reps = typeof data.reps === 'string' ? parseInt(data.reps) : data.reps;
           if (!isNaN(weight) && !isNaN(reps)) {
-            return total + (weight * reps);
+            return total + weight * reps;
           }
         }
         return total;
@@ -204,16 +213,15 @@ const StartWorkout = () => {
         if (data.completed && data.weight && data.reps) {
           const weight = typeof data.weight === 'string' ? parseFloat(data.weight) : data.weight;
           const reps = typeof data.reps === 'string' ? parseInt(data.reps) : data.reps;
-          
           if (!isNaN(weight) && !isNaN(reps)) {
             const [exerciseIndex] = key.split('-');
             const exercise = exercises[parseInt(exerciseIndex)];
             const exerciseName = exercise.exercise_name;
-            
-            if (!exerciseRecords[exerciseName] || 
-                (weight > exerciseRecords[exerciseName].weight) ||
-                (weight === exerciseRecords[exerciseName].weight && reps > exerciseRecords[exerciseName].reps)) {
-              exerciseRecords[exerciseName] = { weight, reps };
+            if (!exerciseRecords[exerciseName] || weight > exerciseRecords[exerciseName].weight || weight === exerciseRecords[exerciseName].weight && reps > exerciseRecords[exerciseName].reps) {
+              exerciseRecords[exerciseName] = {
+                weight,
+                reps
+              };
             }
           }
         }
@@ -232,13 +240,11 @@ const StartWorkout = () => {
       const today = new Date().toISOString().split('T')[0];
       const lastWorkoutDate = stats?.last_workout_date;
       let newStreak = 1;
-      
       if (lastWorkoutDate) {
         const lastDate = new Date(lastWorkoutDate);
         const todayDate = new Date(today);
         const diffTime = todayDate.getTime() - lastDate.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
         if (diffDays === 1) {
           // Treino em dias consecutivos
           newStreak = (stats?.current_streak || 0) + 1;
@@ -277,25 +283,21 @@ const StartWorkout = () => {
           duration: time
         }
       });
-
       toast({
         title: "Treino Finalizado!",
-        description: `Parabéns! Você completou ${completedSeries} séries em ${formatTime(time)}. ${totalWeight > 0 ? `Total: ${totalWeight}kg levantados!` : ''}`,
+        description: `Parabéns! Você completou ${completedSeries} séries em ${formatTime(time)}. ${totalWeight > 0 ? `Total: ${totalWeight}kg levantados!` : ''}`
       });
-      
       navigate('/');
     } catch (error) {
       console.error('Erro ao salvar treino:', error);
       toast({
         title: "Treino Finalizado!",
-        description: `Parabéns! Você completou ${completedSeries} séries em ${formatTime(time)}.`,
+        description: `Parabéns! Você completou ${completedSeries} séries em ${formatTime(time)}.`
       });
       navigate('/');
     }
   };
-
-  return (
-    <div className="min-h-screen bg-background pb-20 px-4 pt-6">
+  return <div className="min-h-screen bg-background pb-20 px-4 pt-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -311,39 +313,11 @@ const StartWorkout = () => {
       </div>
 
       {/* Timer Card */}
-      <Card className="floating-card mb-6 bg-gradient-primary p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-bold text-primary-foreground">
-              Tempo de Treino
-            </h2>
-            <p className="text-3xl font-mono font-bold text-primary-foreground">
-              {formatTime(time)}
-            </p>
-          </div>
-          <Button 
-            variant="glass"
-            size="lg"
-            onClick={() => setIsActive(!isActive)}
-            className="text-primary-foreground border-primary-foreground/20"
-          >
-            {isActive ? <Timer size={20} /> : <Play size={20} />}
-            {isActive ? "Pausar" : "Iniciar"}
-          </Button>
-        </div>
-        
-        <div className="w-full bg-primary-foreground/20 rounded-full h-2">
-          <div 
-            className="bg-secondary h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(completedSeries / totalSeries) * 100}%` }}
-          />
-        </div>
-      </Card>
+      
 
       {/* Exercise List */}
       <div className="space-y-6">
-        {exercises.map((exercise, exerciseIndex) => (
-          <Card key={exerciseIndex} className="floating-card p-4">
+        {exercises.map((exercise, exerciseIndex) => <Card key={exerciseIndex} className="floating-card p-4">
             <div className="mb-4">
               <h3 className="font-semibold text-lg mb-1">{exercise.exercise_name}</h3>
               <p className="text-sm text-muted-foreground">{exercise.sets.length} séries</p>
@@ -351,35 +325,15 @@ const StartWorkout = () => {
             
             <div className="space-y-3">
               {exercise.sets.map((set, setIndex) => {
-                const key = `${exerciseIndex}-${setIndex}`;
-                const seriesCompleted = seriesData[key]?.completed;
-                
-                return (
-                  <div 
-                    key={setIndex}
-                    className={`p-3 rounded-lg border transition-all duration-300 ${
-                      seriesCompleted 
-                        ? 'bg-secondary/10 border-secondary/30' 
-                        : 'bg-card border-border hover:border-primary/20'
-                    }`}
-                  >
+            const key = `${exerciseIndex}-${setIndex}`;
+            const seriesCompleted = seriesData[key]?.completed;
+            return <div key={setIndex} className={`p-3 rounded-lg border transition-all duration-300 ${seriesCompleted ? 'bg-secondary/10 border-secondary/30' : 'bg-card border-border hover:border-primary/20'}`}>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => toggleSeries(key)}
-                          className={`w-6 h-6 rounded-full border-2 ${
-                            seriesCompleted
-                              ? 'bg-secondary border-secondary text-secondary-foreground'
-                              : 'border-muted-foreground'
-                          }`}
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => toggleSeries(key)} className={`w-6 h-6 rounded-full border-2 ${seriesCompleted ? 'bg-secondary border-secondary text-secondary-foreground' : 'border-muted-foreground'}`}>
                           {seriesCompleted && <Check size={12} />}
                         </Button>
-                        <span className={`font-medium ${
-                          seriesCompleted ? 'line-through text-muted-foreground' : ''
-                        }`}>
+                        <span className={`font-medium ${seriesCompleted ? 'line-through text-muted-foreground' : ''}`}>
                           Série {setIndex + 1}
                         </span>
                       </div>
@@ -388,56 +342,32 @@ const StartWorkout = () => {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs text-muted-foreground">Peso (kg)</label>
-                        <Input
-                          type="text"
-                          value={seriesData[key]?.weight ?? ''}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                              updateWeight(key, value);
-                            }
-                          }}
-                          className="mt-1"
-                          placeholder="Peso (kg)"
-                          disabled={seriesCompleted}
-                          inputMode="decimal"
-                        />
+                        <Input type="text" value={seriesData[key]?.weight ?? ''} onChange={e => {
+                    const value = e.target.value;
+                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                      updateWeight(key, value);
+                    }
+                  }} className="mt-1" placeholder="Peso (kg)" disabled={seriesCompleted} inputMode="decimal" />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Repetições</label>
-                        <Input
-                          type="text"
-                          value={seriesData[key]?.reps ?? ''}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '' || /^\d+$/.test(value)) {
-                              updateReps(key, value);
-                            }
-                          }}
-                          className="mt-1"
-                          placeholder="Repetições"
-                          disabled={seriesCompleted}
-                          inputMode="numeric"
-                        />
+                        <Input type="text" value={seriesData[key]?.reps ?? ''} onChange={e => {
+                    const value = e.target.value;
+                    if (value === '' || /^\d+$/.test(value)) {
+                      updateReps(key, value);
+                    }
+                  }} className="mt-1" placeholder="Repetições" disabled={seriesCompleted} inputMode="numeric" />
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  </div>;
+          })}
             </div>
-          </Card>
-        ))}
+          </Card>)}
       </div>
 
       {/* Finish Workout Button */}
       <div className="mt-8">
-        <Button 
-          variant="secondary" 
-          size="lg"
-          className="w-full h-14"
-          disabled={completedSeries === 0}
-          onClick={finishWorkout}
-        >
+        <Button variant="secondary" size="lg" className="w-full h-14" disabled={completedSeries === 0} onClick={finishWorkout}>
           <Check className="mr-2" size={20} />
           Finalizar Treino ({completedSeries}/{totalSeries})
         </Button>
@@ -448,30 +378,15 @@ const StartWorkout = () => {
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">Tempo de descanso:</span>
           <div className="flex gap-2">
-            {[60, 90, 120, 180].map((duration) => (
-              <Button
-                key={duration}
-                variant={restDuration === duration ? "secondary" : "outline"}
-                size="sm"
-                onClick={() => setRestDuration(duration)}
-                className="px-3 py-1 text-xs"
-              >
-                {duration < 120 ? `${duration}s` : `${duration/60}min`}
-              </Button>
-            ))}
+            {[60, 90, 120, 180].map(duration => <Button key={duration} variant={restDuration === duration ? "secondary" : "outline"} size="sm" onClick={() => setRestDuration(duration)} className="px-3 py-1 text-xs">
+                {duration < 120 ? `${duration}s` : `${duration / 60}min`}
+              </Button>)}
           </div>
         </div>
       </Card>
 
       {/* Rest Timer */}
-      <RestTimer
-        isVisible={showRestTimer}
-        onClose={() => setShowRestTimer(false)}
-        onComplete={() => setShowRestTimer(false)}
-        duration={restDuration}
-      />
-    </div>
-  );
+      <RestTimer isVisible={showRestTimer} onClose={() => setShowRestTimer(false)} onComplete={() => setShowRestTimer(false)} duration={restDuration} />
+    </div>;
 };
-
 export default StartWorkout;
