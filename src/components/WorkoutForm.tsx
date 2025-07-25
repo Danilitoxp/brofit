@@ -253,24 +253,33 @@ export const WorkoutForm = ({
                         <div>
                           <Label className="text-xs">Reps</Label>
                           <Input 
-                            type="number" 
-                            min="1" 
+                            type="text" 
                             value={set.reps} 
-                            onChange={e => updateSet(exerciseIndex, setIndex, 'reps', parseInt(e.target.value) || 1)} 
+                            onChange={e => {
+                              const value = e.target.value;
+                              if (value === '' || /^\d+$/.test(value)) {
+                                updateSet(exerciseIndex, setIndex, 'reps', value === '' ? 0 : parseInt(value));
+                              }
+                            }} 
                             className="h-8" 
+                            inputMode="numeric"
                           />
                         </div>
 
                         <div>
                           <Label className="text-xs">Peso (kg)</Label>
                           <Input 
-                            type="number" 
-                            min="0" 
-                            step="0.5" 
+                            type="text" 
                             value={set.weight || ''} 
-                            onChange={e => updateSet(exerciseIndex, setIndex, 'weight', parseFloat(e.target.value) || 0)} 
+                            onChange={e => {
+                              const value = e.target.value;
+                              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                updateSet(exerciseIndex, setIndex, 'weight', value === '' ? 0 : parseFloat(value));
+                              }
+                            }} 
                             className="h-8" 
                             placeholder="0" 
+                            inputMode="decimal"
                           />
                         </div>
 

@@ -68,17 +68,12 @@ const StartWorkout = () => {
       exercises.forEach((ex, exIndex) => {
         ex.sets.forEach((set, setIndex) => {
           const key = `${exIndex}-${setIndex}`;
-          // Só inicializar se ainda não existe dados para essa série
-          if (!seriesData[key]) {
-            newData[key] = {
-              weight: '',
-              reps: '',
-              completed: false
-            };
-          } else {
-            // Manter dados existentes
-            newData[key] = { ...seriesData[key] };
-          }
+          // Carrega os dados salvos do set ou inicializa vazio
+          newData[key] = {
+            weight: set.weight || '',
+            reps: set.reps || '',
+            completed: false
+          };
         });
       });
       setSeriesData(newData);
@@ -394,26 +389,35 @@ const StartWorkout = () => {
                       <div>
                         <label className="text-xs text-muted-foreground">Peso (kg)</label>
                         <Input
-                          type="number"
-                          min="0"
-                          step="0.5"
+                          type="text"
                           value={seriesData[key]?.weight ?? ''}
-                          onChange={(e) => updateWeight(key, e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                              updateWeight(key, value);
+                            }
+                          }}
                           className="mt-1"
                           placeholder="Peso (kg)"
                           disabled={seriesCompleted}
+                          inputMode="decimal"
                         />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Repetições</label>
                         <Input
-                          type="number"
-                          min="1"
+                          type="text"
                           value={seriesData[key]?.reps ?? ''}
-                          onChange={(e) => updateReps(key, e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || /^\d+$/.test(value)) {
+                              updateReps(key, value);
+                            }
+                          }}
                           className="mt-1"
                           placeholder="Repetições"
                           disabled={seriesCompleted}
+                          inputMode="numeric"
                         />
                       </div>
                     </div>

@@ -34,7 +34,7 @@ export const ActivityFeed = () => {
           error: activitiesError
         } = await supabase.from('activity_feed').select('*').order('created_at', {
           ascending: false
-        }).limit(10);
+        }).limit(3);
         if (activitiesError) throw activitiesError;
 
         // Buscar dados dos perfis dos usuários
