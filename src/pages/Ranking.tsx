@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRanking, RankingEntry } from "@/hooks/useRanking";
+import { SEO } from "@/components/SEO";
 
 const Ranking = () => {
   const {
@@ -172,8 +173,14 @@ const Ranking = () => {
   }
   
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
+    <>
+      <SEO 
+        title="Ranking Fitness - BroFit"
+        description="Veja os rankings gerais, por exercício e entre amigos no BroFit. Compare seu progresso com a comunidade."
+        canonicalPath="/ranking"
+      />
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -303,6 +310,7 @@ const Ranking = () => {
         </Tabs>
       </div>
     </div>
+    </>
   );
 };
 

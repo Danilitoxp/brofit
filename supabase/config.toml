@@ -1,6 +1,9 @@
 project_id = "vvbobbonmwccytcjhacm"
 
 [functions.send-push-notification]
+verify_jwt = true
+
+[functions.get-webpush-key]
 verify_jwt = false
 
 [functions.schedule-workout-reminders]

@@ -60,9 +60,15 @@ export const usePushNotifications = () => {
       }
 
       // Create new subscription
+      // Fetch VAPID public key from Edge Function
+      const { data: keyResp, error: keyError } = await supabase.functions.invoke('get-webpush-key');
+      if (keyError || !keyResp?.publicKey) {
+        throw new Error('Falha ao obter a chave pública VAPID');
+      }
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa40HI80NmIjDSGj3E9MIpjB2g1hWNkLtNqWlE6Ox0RZ7EfQYQg9Zm4EBJ9V3Y') // VAPID public key
+        applicationServerKey: urlBase64ToUint8Array(keyResp.publicKey)
       });
 
       // Save subscription to database

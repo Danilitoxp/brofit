@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,10 +13,7 @@ interface PushNotificationRequest {
   body: string;
   data?: any;
   tag?: string;
-  actions?: Array<{
-    action: string;
-    title: string;
-  }>;
+  actions?: Array<{ action: string; title: string }>;
 }
 
 serve(async (req) => {
@@ -24,38 +22,12 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+    const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
     const { user_id, title, body, data, tag, actions }: PushNotificationRequest = await req.json();
-
-    console.log('Sending push notification:', { user_id, title, body });
-
-    // Buscar subscrições do usuário ou de todos se user_id não fornecido
-    let query = supabase
-      .from('push_subscriptions')
-      .select('*');
-    
-    if (user_id) {
-      query = query.eq('user_id', user_id);
-    }
-
-    const { data: subscriptions, error: subError } = await query;
-
-    if (subError) {
-      console.error('Error fetching subscriptions:', subError);
-      throw subError;
-    }
-
-    if (!subscriptions || subscriptions.length === 0) {
-      console.log('No subscriptions found');
-      return new Response(
-        JSON.stringify({ message: 'No subscriptions found' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY');
     const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
@@ -64,85 +36,61 @@ serve(async (req) => {
       throw new Error('VAPID keys not configured');
     }
 
-    // Enviar notificação para cada subscrição
-    const promises = subscriptions.map(async (subscription) => {
-      try {
-        const payload = JSON.stringify({
-          title,
-          body,
-          data: data || {},
-          tag: tag || 'brofit-notification',
-          actions: actions || []
-        });
+    webpush.setVapidDetails('mailto:support@brofit.app', vapidPublicKey, vapidPrivateKey);
 
-        // Usar web-push library através de fetch para Web Push Protocol
-        const response = await fetch(subscription.endpoint, {
-          method: 'POST',
-          headers: {
-            'TTL': '86400', // 24 horas
-            'Content-Type': 'application/json',
-            'Authorization': `vapid t=${await generateVapidToken(vapidPublicKey, vapidPrivateKey, subscription.endpoint)}, k=${vapidPublicKey}`,
-          },
-          body: payload,
-        });
+    let query = supabase.from('push_subscriptions').select('*');
+    if (user_id) query = query.eq('user_id', user_id);
 
-        if (!response.ok) {
-          console.error(`Failed to send to ${subscription.endpoint}:`, response.status);
-          
-          // Remover subscrições inválidas
-          if (response.status === 410 || response.status === 404) {
-            await supabase
-              .from('push_subscriptions')
-              .delete()
-              .eq('id', subscription.id);
-            console.log(`Removed invalid subscription: ${subscription.id}`);
-          }
-        } else {
-          console.log(`Successfully sent to ${subscription.endpoint}`);
-        }
+    const { data: subscriptions, error: subError } = await query;
+    if (subError) throw subError;
 
-        return { success: response.ok, status: response.status };
-      } catch (error) {
-        console.error(`Error sending to ${subscription.endpoint}:`, error);
-        return { success: false, error: error.message };
-      }
+    if (!subscriptions || subscriptions.length === 0) {
+      return new Response(
+        JSON.stringify({ message: 'No subscriptions found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const payload = (s: any) => JSON.stringify({
+      title,
+      body,
+      data: data || {},
+      tag: tag || 'brofit-notification',
+      actions: actions || [],
     });
 
-    const results = await Promise.all(promises);
-    const successCount = results.filter(r => r.success).length;
+    const results = await Promise.all(
+      subscriptions.map(async (s: any) => {
+        try {
+          const subscription = {
+            endpoint: s.endpoint,
+            keys: { p256dh: s.p256dh, auth: s.auth },
+          } as webpush.PushSubscription;
 
-    console.log(`Sent ${successCount}/${results.length} notifications successfully`);
-
-    return new Response(
-      JSON.stringify({
-        message: `Sent ${successCount}/${results.length} notifications`,
-        results
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          await webpush.sendNotification(subscription, payload(s));
+          return { success: true };
+        } catch (err: any) {
+          // Remove invalid/expired subscriptions
+          if (err?.statusCode === 410 || err?.statusCode === 404) {
+            await supabase.from('push_subscriptions').delete().eq('id', s.id);
+          }
+          console.error('Push send error:', err?.statusCode, err?.message);
+          return { success: false, error: err?.message, status: err?.statusCode };
+        }
+      })
     );
 
-  } catch (error) {
+    const successCount = results.filter((r) => r.success).length;
+
+    return new Response(
+      JSON.stringify({ message: `Sent ${successCount}/${results.length} notifications`, results }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error: any) {
     console.error('Error in send-push-notification:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: error.message || 'Unexpected error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
-
-// Função auxiliar para gerar token VAPID (implementação simplificada)
-async function generateVapidToken(publicKey: string, privateKey: string, audience: string): Promise<string> {
-  // Para produção, você deveria implementar a assinatura JWT completa do VAPID
-  // Por simplicidade, estamos retornando uma string básica
-  const header = btoa(JSON.stringify({ typ: 'JWT', alg: 'ES256' }));
-  const payload = btoa(JSON.stringify({
-    aud: audience,
-    exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60, // 12 horas
-    sub: 'mailto:admin@brofit.app'
-  }));
-  
-  return `${header}.${payload}.signature`;
-}
