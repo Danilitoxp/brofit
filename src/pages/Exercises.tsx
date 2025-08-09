@@ -132,9 +132,9 @@ const Exercises = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {allExercises.map(exercise => <Card key={exercise.id} className="overflow-hidden">
-            {exercise.image_url && <div className="aspect-video">
-                <img src={exercise.image_url} alt={exercise.name} className="w-full h-full object-cover" />
-              </div>}
+            <div className="aspect-video">
+                <img src={exercise.image_url || '/placeholder.svg'} alt={exercise.image_url ? exercise.name : `Imagem do exercício ${exercise.name} (ilustrativa)`} className="w-full h-full object-cover" loading="lazy" />
+              </div>
             
             <CardHeader>
               <div className="flex justify-between items-start">
