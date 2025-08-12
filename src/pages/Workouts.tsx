@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Play, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useWorkouts, Workout } from "@/hooks/useWorkouts";
 import { WorkoutForm } from "@/components/WorkoutForm";
 import { useNavigate } from "react-router-dom";
+import { getAllExercises } from "@/data/exercises";
 const DAYS_OF_WEEK = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const Workouts = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const Workouts = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [exerciseMap, setExerciseMap] = useState<Record<string, string>>({});
   const handleSubmit = async (workout: Workout) => {
     setIsSubmitting(true);
     try {
@@ -52,6 +54,21 @@ const Workouts = () => {
       }
     });
   };
+
+  // Carrega catálogo de exercícios (predefinidos + custom) para obter imagem por nome
+  useEffect(() => {
+    let isMounted = true;
+    getAllExercises().then(list => {
+      if (!isMounted) return;
+      const map: Record<string, string> = {};
+      list.forEach(e => {
+        if (e.image_url) map[e.name] = e.image_url;
+      });
+      setExerciseMap(map);
+    });
+    return () => { isMounted = false; };
+  }, []);
+
   if (loading) {
     return <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
@@ -178,6 +195,12 @@ const Workouts = () => {
                       <div className="grid gap-2 max-h-48 overflow-y-auto">
                         {workout.exercises.slice(0, 5).map((exercise, index) => <div key={index} className="flex justify-between items-center p-2 bg-muted/30 rounded-lg text-sm">
                             <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <img
+                                src={exerciseMap[exercise.exercise_name] || '/placeholder.svg'}
+                                alt={`Imagem do exercício ${exercise.exercise_name}`}
+                                className="w-10 h-10 rounded-md object-cover bg-muted shrink-0"
+                                loading="lazy"
+                              />
                               <div className="w-2 h-2 rounded-full bg-primary shrink-0"></div>
                               <span className="font-medium truncate">{exercise.exercise_name}</span>
                             </div>
