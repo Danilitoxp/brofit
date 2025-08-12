@@ -40,8 +40,9 @@ const Exercises = () => {
       if (!imageUrl && imageFile) return; // Upload falhou
     }
 
+    const { is_custom, ...clean } = exerciseData || {};
     const finalExerciseData = {
-      ...exerciseData,
+      ...clean,
       image_url: imageUrl
     };
 
@@ -62,8 +63,9 @@ const Exercises = () => {
       }
     }
 
+    const { is_custom, ...clean } = exerciseData || {};
     const finalExerciseData = {
-      ...exerciseData,
+      ...clean,
       image_url: imageUrl
     };
 
