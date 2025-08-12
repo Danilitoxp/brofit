@@ -11,6 +11,7 @@ import { useFriends, UserSearchResult } from "@/hooks/useFriends";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { usePresence } from "@/hooks/usePresence";
 const Friends = () => {
   const {
     friends,
@@ -33,6 +34,8 @@ const Friends = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const friendIds = friends.map(f => f.user_id);
+  const { isOnline, lastSeen } = usePresence(friendIds);
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.length >= 2) {
@@ -77,7 +80,11 @@ const Friends = () => {
               <h3 className="font-semibold">{friend.display_name}</h3>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  Amigos desde {formatTimeAgo(friend.created_at)}
+                  {isOnline(friend.user_id)
+                    ? 'Online'
+                    : (lastSeen[friend.user_id]
+                        ? `Online ${formatTimeAgo(lastSeen[friend.user_id] as string)}`
+                        : 'Offline')}
                 </span>
               </div>
               {friend.bio && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{friend.bio}</p>}

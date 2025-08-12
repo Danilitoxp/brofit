@@ -32,17 +32,23 @@ export const ActivityFeed = () => {
         const {
           data: activitiesData,
           error: activitiesError
-        } = await supabase.from('activity_feed').select('*').order('created_at', {
-          ascending: false
-        }).limit(3);
+        } = await supabase
+          .from('activity_feed')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(3);
         if (activitiesError) throw activitiesError;
 
-        // Buscar dados dos perfis dos usuários
+        // Buscar dados dos perfis dos usuários (apenas o próprio neste caso)
         const userIds = [...new Set(activitiesData?.map(a => a.user_id) || [])];
         const {
           data: profilesData,
           error: profilesError
-        } = await supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', userIds);
+        } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url')
+          .in('user_id', userIds);
         if (profilesError) throw profilesError;
 
         // Combinar dados
@@ -66,13 +72,16 @@ export const ActivityFeed = () => {
     fetchActivities();
 
     // Configurar realtime para atualizações
-    const subscription = supabase.channel('activity_feed_changes').on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'activity_feed'
-    }, () => {
-      fetchActivities(); // Recarregar quando houver nova atividade
-    }).subscribe();
+    const subscription = supabase
+      .channel('activity_feed_changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'activity_feed', filter: `user_id=eq.${user.id}` },
+        () => {
+          fetchActivities(); // Recarregar quando houver nova atividade do próprio usuário
+        }
+      )
+      .subscribe();
     return () => {
       subscription.unsubscribe();
     };
