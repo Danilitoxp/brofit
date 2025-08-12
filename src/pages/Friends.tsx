@@ -83,7 +83,7 @@ const Friends = () => {
                   {isOnline(friend.user_id)
                     ? 'Online'
                     : (lastSeen[friend.user_id]
-                        ? `Online ${formatTimeAgo(lastSeen[friend.user_id] as string)}`
+                        ? `Online há ${String(formatTimeAgo(lastSeen[friend.user_id] as string)).replace(' atrás','')}`
                         : 'Offline')}
                 </span>
               </div>
