@@ -62,6 +62,21 @@ const Friends = () => {
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h atrás`;
     return `${Math.floor(diffInMinutes / 1440)}d atrás`;
   };
+
+  const formatLastSeen = (lastSeenAt: string): string => {
+    const now = new Date();
+    const lastSeen = new Date(lastSeenAt);
+    const diffMs = now.getTime() - lastSeen.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 5) return "Online";
+    if (diffMinutes < 60) return `Offline há ${diffMinutes} minutos`;
+    if (diffHours < 24) return `Offline há ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+    if (diffDays < 30) return `Offline há ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+    return `Offline há mais de 30 dias`;
+  };
   const FriendCard = ({
     friend
   }: {
@@ -83,7 +98,7 @@ const Friends = () => {
                   {isOnline(friend.user_id)
                     ? 'Online'
                     : (lastSeen[friend.user_id]
-                        ? `Online há ${String(formatTimeAgo(lastSeen[friend.user_id] as string)).replace(' atrás','')}`
+                        ? formatLastSeen(lastSeen[friend.user_id] as string)
                         : 'Offline')}
                 </span>
               </div>
