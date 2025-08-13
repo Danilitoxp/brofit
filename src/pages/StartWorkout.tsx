@@ -236,34 +236,20 @@ const StartWorkout = () => {
         });
       }
 
-      // Calcular nova sequência
-      const today = new Date().toISOString().split('T')[0];
-      const lastWorkoutDate = stats?.last_workout_date;
-      let newStreak = 1;
-      if (lastWorkoutDate) {
-        const lastDate = new Date(lastWorkoutDate);
-        const todayDate = new Date(today);
-        const diffTime = todayDate.getTime() - lastDate.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays === 1) {
-          // Treino em dias consecutivos
-          newStreak = (stats?.current_streak || 0) + 1;
-        } else if (diffDays === 0) {
-          // Mesmo dia, manter sequência
-          newStreak = stats?.current_streak || 1;
-        }
-        // Se mais de 1 dia, sequência quebra (newStreak = 1)
-      }
+      // Criar o treino no banco - isso vai disparar o trigger que calcula o streak automaticamente
+      const { data: workoutData, error: workoutError } = await supabase
+        .from('workouts')
+        .insert({
+          name: `Treino - ${new Date().toLocaleDateString('pt-BR')}`,
+          user_id: user.id
+        })
+        .select()
+        .single();
 
-      // Atualizar estatísticas
-      await updateStats({
-        total_workouts: (stats?.total_workouts || 0) + 1,
-        total_exercises: (stats?.total_exercises || 0) + completedSeries,
-        total_weight_lifted: (stats?.total_weight_lifted || 0) + totalWeight,
-        current_streak: newStreak,
-        longest_streak: Math.max(newStreak, stats?.longest_streak || 0),
-        last_workout_date: today
-      });
+      if (workoutError) {
+        console.error('Erro ao criar workout:', workoutError);
+        throw workoutError;
+      }
 
       // Verificar conquistas
       await supabase.rpc('check_and_grant_achievements', {

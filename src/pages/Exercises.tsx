@@ -148,7 +148,7 @@ const Exercises = () => {
                 </div>
                 
                 <div className="flex gap-1">
-                  {exercise.is_custom ? <>
+                  {customExercises.some(ce => ce.id === exercise.id) ? <>
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(exercise)}>
                         <Edit className="h-4 w-4" />
                       </Button>

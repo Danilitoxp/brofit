@@ -7,7 +7,6 @@ export interface Exercise {
   muscle_groups: string[];
   description?: string;
   image_url?: string;
-  is_custom?: boolean;
 }
 
 export const EXERCISE_CATEGORIES = [
@@ -101,8 +100,7 @@ export const getExercisesByCategory = async (categoryId: string): Promise<Exerci
       category: ex.category,
       muscle_groups: ex.muscle_groups,
       description: ex.description,
-      image_url: ex.image_url,
-      is_custom: true
+      image_url: ex.image_url
     })) || [];
     
     return [...predefined, ...custom];
@@ -134,8 +132,7 @@ export const getAllExercises = async (): Promise<Exercise[]> => {
       category: ex.category,
       muscle_groups: ex.muscle_groups,
       description: ex.description,
-      image_url: ex.image_url,
-      is_custom: true
+      image_url: ex.image_url
     })) || [];
     
     return [...predefined, ...custom];

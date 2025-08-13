@@ -31,8 +31,7 @@ export const ExerciseEditModal = ({
     category: 'chest',
     muscle_groups: [],
     description: '',
-    image_url: '',
-    is_custom: false
+    image_url: ''
   });
 
   const [newMuscleGroup, setNewMuscleGroup] = useState('');
