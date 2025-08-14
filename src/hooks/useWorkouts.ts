@@ -159,11 +159,6 @@ export const useWorkouts = () => {
         }
       }
 
-      toast({
-        title: "Treino criado!",
-        description: `O treino "${workout.name}" foi criado com sucesso.`
-      });
-
       // Recarregar treinos
       await fetchWorkouts();
     } catch (error) {
@@ -248,11 +243,6 @@ export const useWorkouts = () => {
           }
         }
       }
-
-      toast({
-        title: "Treino atualizado!",
-        description: `O treino "${workout.name}" foi atualizado com sucesso.`
-      });
 
       await fetchWorkouts();
     } catch (error) {
