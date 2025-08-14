@@ -33,8 +33,6 @@ export const ExerciseEditModal = ({
     description: '',
     image_url: ''
   });
-
-  const [newMuscleGroup, setNewMuscleGroup] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const { toast } = useToast();
 
@@ -51,29 +49,6 @@ export const ExerciseEditModal = ({
     }
   };
 
-  const addMuscleGroup = () => {
-    if (newMuscleGroup.trim() && !formData.muscle_groups.includes(newMuscleGroup.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        muscle_groups: [...prev.muscle_groups, newMuscleGroup.trim()]
-      }));
-      setNewMuscleGroup('');
-    }
-  };
-
-  const removeMuscleGroup = (muscleGroup: string) => {
-    setFormData(prev => ({
-      ...prev,
-      muscle_groups: prev.muscle_groups.filter(mg => mg !== muscleGroup)
-    }));
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addMuscleGroup();
-    }
-  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,12 +64,12 @@ export const ExerciseEditModal = ({
         return;
       }
 
-      // Verificar tamanho máximo (10MB para GIFs, 5MB para outras imagens)
-      const maxSize = file.type === 'image/gif' ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+      // Verificar tamanho máximo (5MB)
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         toast({
           title: "Erro",
-          description: `O arquivo deve ter no máximo ${file.type === 'image/gif' ? '10MB' : '5MB'}.`,
+          description: "O arquivo deve ter no máximo 5MB.",
           variant: "destructive"
         });
         return;
@@ -145,47 +120,7 @@ export const ExerciseEditModal = ({
           </div>
 
           <div>
-            <Label>Grupos Musculares</Label>
-            <div className="flex gap-2 mb-2">
-              <Input
-                value={newMuscleGroup}
-                onChange={(e) => setNewMuscleGroup(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ex: Peitoral"
-              />
-              <Button type="button" onClick={addMuscleGroup} size="sm">
-                Adicionar
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {formData.muscle_groups.map(muscleGroup => (
-                <Badge key={muscleGroup} variant="secondary" className="flex items-center gap-1">
-                  {muscleGroup}
-                  <button
-                    type="button"
-                    onClick={() => removeMuscleGroup(muscleGroup)}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X size={12} />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="description">Descrição (opcional)</Label>
-            <Textarea
-              id="description"
-              value={formData.description || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Instruções ou dicas sobre o exercício"
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="image">Imagem ou GIF (opcional)</Label>
+            <Label htmlFor="image">Imagem (opcional)</Label>
             <div className="space-y-2">
               <Input
                 id="image"
@@ -195,7 +130,7 @@ export const ExerciseEditModal = ({
                 className="cursor-pointer"
               />
               <p className="text-xs text-muted-foreground">
-                Formatos suportados: JPG, PNG, GIF, WebP. Máximo: 5MB (10MB para GIFs)
+                Formatos suportados: JPG, PNG, GIF, WebP. Máximo: 5MB
               </p>
               {imageFile && (
                 <div className="flex items-center gap-2 p-2 bg-muted rounded-md">

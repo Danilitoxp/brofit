@@ -69,13 +69,19 @@ export const useAdmin = () => {
     if (!user || !isAdmin) return;
 
     try {
+      const exerciseData = {
+        name: exercise.name,
+        category: exercise.category,
+        muscle_groups: [exercise.category], // Usar categoria como grupo muscular padrão
+        description: exercise.description || null,
+        image_url: exercise.image_url || null,
+        created_by: user.id,
+        is_active: true
+      };
+
       const { data, error } = await supabase
         .from('custom_exercises')
-        .insert({
-          ...exercise,
-          created_by: user.id,
-          is_active: true
-        })
+        .insert(exerciseData)
         .select()
         .single();
 
