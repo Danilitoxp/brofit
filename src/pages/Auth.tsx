@@ -153,107 +153,172 @@ const Auth = () => {
   };
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse space-y-4 text-center">
-          <div className="w-16 h-16 bg-primary/20 rounded-full mx-auto"></div>
-          <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
-        </div>
-      </div>;
-  }
-  return <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 overflow-hidden">
-            <img src="/lovable-uploads/199efe6d-81da-4ff6-82c3-ce01a564bff3.png" alt="BroFit Logo" className="w-full h-full object-contain" />
-          </div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            BroFit
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {isLogin ? "Entre na sua conta" : "Crie sua conta"}
-          </p>
-        </div>
-
-        {/* Auth Form */}
-        <Card className="floating-card p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="email" name="email" type="email" placeholder="seu.email@exemplo.com" value={formData.email} onChange={handleInputChange} className="pl-10" required />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="password" name="password" type={showPassword ? "text" : "password"} placeholder="Digite sua senha" value={formData.password} onChange={handleInputChange} className="pl-10 pr-10" required />
-                <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                </Button>
-              </div>
-            </div>
-
-            {/* Nickname (only for signup) */}
-            {!isLogin && <div className="space-y-2">
-                <Label htmlFor="nickname">Nickname</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input id="nickname" name="nickname" type="text" placeholder="Ex: danilitoxp" value={formData.nickname} onChange={e => setFormData({
-                ...formData,
-                nickname: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
-              })} className="pl-10" required pattern="[a-z0-9_]+" title="Apenas letras minúsculas, números e underscore" />
-                </div>
-                
-              </div>}
-
-            {/* Confirm Password (only for signup) */}
-            {!isLogin && <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input id="confirmPassword" name="confirmPassword" type={showPassword ? "text" : "password"} placeholder="Confirme sua senha" value={formData.confirmPassword} onChange={handleInputChange} className="pl-10" required />
-                </div>
-              </div>}
-
-            {/* Submit Button */}
-            <Button type="submit" className="w-full h-12" disabled={isSubmitting}>
-              {isSubmitting ? "Carregando..." : <>
-                  {isLogin ? "Entrar" : "Criar Conta"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>}
-            </Button>
-          </form>
-
-          {/* Toggle Mode */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
-              <Button type="button" variant="link" className="p-0 h-auto text-primary font-semibold" onClick={toggleMode}>
-                {isLogin ? "Criar conta" : "Fazer login"}
-              </Button>
-            </p>
-          </div>
-        </Card>
-
-        {/* Footer */}
-        <div className="text-center mt-8 text-sm text-muted-foreground">
-          <p>
-            Ao continuar, você concorda com nossos{" "}
-            <a href="#" className="text-primary hover:underline">
-              Termos de Uso
-            </a>{" "}
-            e{" "}
-            <a href="#" className="text-primary hover:underline">
-              Política de Privacidade
-            </a>
-          </p>
-        </div>
+      <div className="animate-pulse space-y-4 text-center">
+        <div className="w-16 h-16 bg-primary/20 rounded-full mx-auto"></div>
+        <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
       </div>
     </div>;
+  }
+  return <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="w-full max-w-md">
+      {/* Logo */}
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 overflow-hidden">
+          <img src="/lovable-uploads/199efe6d-81da-4ff6-82c3-ce01a564bff3.png" alt="BroFit Logo" className="w-full h-full object-contain" />
+        </div>
+        <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          BroFit
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          {isLogin ? "Entre na sua conta" : "Crie sua conta"}
+        </p>
+      </div>
+
+      {/* Auth Form */}
+      <Card className="floating-card p-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Nickname (only for signup) */}
+          {!isLogin && (
+            <div className="space-y-2">
+              <Label htmlFor="nickname">Nickname</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="nickname"
+                  name="nickname"
+                  type="text"
+                  placeholder="Ex: danilitoxp"
+                  value={formData.nickname}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      nickname: e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9_]/g, "")
+                    })
+                  }
+                  className="pl-10"
+                  required
+                  pattern="[a-z0-9_]+"
+                  title="Apenas letras minúsculas, números e underscore"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Email */}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="seu.email@exemplo.com"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="pl-10"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div className="space-y-2">
+            <Label htmlFor="password">Senha</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Digite sua senha"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="pl-10 pr-10"
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Confirm Password (only for signup) */}
+          {!isLogin && (
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Confirme sua senha"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <Button type="submit" className="w-full h-12" disabled={isSubmitting}>
+            {isSubmitting ? (
+              "Carregando..."
+            ) : (
+              <>
+                {isLogin ? "Entrar" : "Criar Conta"}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </form>
+
+        {/* Toggle Mode */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto text-primary font-semibold"
+              onClick={toggleMode}
+            >
+              {isLogin ? "Criar conta" : "Fazer login"}
+            </Button>
+          </p>
+        </div>
+      </Card>
+
+
+      {/* Footer */}
+      <div className="text-center mt-8 text-sm text-muted-foreground">
+        <p>
+          Ao continuar, você concorda com nossos{" "}
+          <a href="#" className="text-primary hover:underline">
+            Termos de Uso
+          </a>{" "}
+          e{" "}
+          <a href="#" className="text-primary hover:underline">
+            Política de Privacidade
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>;
 };
 export default Auth;
