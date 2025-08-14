@@ -40,13 +40,14 @@ export const WorkoutForm = ({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // NOVO: busca os exercícios personalizados
+  // Busca apenas os exercícios personalizados
   const [customExercises, setCustomExercises] = useState<Exercise[]>([]);
   useEffect(() => {
     const fetchCustomExercises = async () => {
       const { data, error } = await supabase
         .from('custom_exercises')
-        .select('*');
+        .select('*')
+        .eq('is_active', true);
       if (!error && data) {
         const formatted = data.map(item => ({
           ...item,
@@ -58,8 +59,8 @@ export const WorkoutForm = ({
     fetchCustomExercises();
   }, []);
 
-  // junta os padrões com os personalizados
-  const allExercises = [...PREDEFINED_EXERCISES, ...customExercises];
+  // Usar apenas exercícios customizados
+  const allExercises = customExercises;
   const filteredExercises = allExercises.filter(exercise => {
     const matchesCategory = selectedCategory === "all" || exercise.category === selectedCategory;
     const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -188,26 +189,42 @@ export const WorkoutForm = ({
 
           {/* Lista de exercícios disponíveis */}
           <div className="max-h-60 overflow-y-auto mb-4 border rounded-lg p-4 bg-muted/30">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {filteredExercises.map(exercise => (
-                <Button 
-                  key={exercise.id} 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  className="justify-start h-auto p-3 text-left" 
-                  onClick={() => addExercise(exercise.name)} 
-                  disabled={exercises.some(ex => ex.exercise_name === exercise.name)}
-                >
-                  <div>
-                    <div className="font-medium">{exercise.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {exercise.muscle_groups.join(", ")}
+            {filteredExercises.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                <p>Nenhum exercício encontrado.</p>
+                <p className="text-sm">Crie exercícios personalizados primeiro.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {filteredExercises.map(exercise => (
+                  <Button 
+                    key={exercise.id} 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="justify-start h-auto p-3 text-left" 
+                    onClick={() => addExercise(exercise.name)} 
+                    disabled={exercises.some(ex => ex.exercise_name === exercise.name)}
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      {exercise.image_url && (
+                        <img 
+                          src={exercise.image_url} 
+                          alt={exercise.name}
+                          className="w-12 h-12 object-cover rounded-md flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{exercise.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {EXERCISE_CATEGORIES.find(cat => cat.id === exercise.category)?.name || exercise.category}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </Button>
-              ))}
-            </div>
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
