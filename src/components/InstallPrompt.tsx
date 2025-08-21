@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, X, Smartphone, Monitor, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -12,10 +12,19 @@ import {
 } from '@/components/ui/dialog';
 import { usePWA } from '@/hooks/usePWA';
 
+const INSTALL_PROMPT_DISMISSED_KEY = 'brofit-install-prompt-dismissed';
+
 export const InstallPrompt = () => {
   const { isInstallable, isInstalled, installApp, getInstallInstructions } = usePWA();
   const [showInstructions, setShowInstructions] = useState(false);
   const [showPrompt, setShowPrompt] = useState(true);
+
+  useEffect(() => {
+    const isDismissed = localStorage.getItem(INSTALL_PROMPT_DISMISSED_KEY);
+    if (isDismissed) {
+      setShowPrompt(false);
+    }
+  }, []);
 
   const instructions = getInstallInstructions();
   const isIOS = instructions.platform === 'iOS';
@@ -31,6 +40,11 @@ export const InstallPrompt = () => {
     } else {
       setShowInstructions(true);
     }
+  };
+
+  const handleDismiss = () => {
+    localStorage.setItem(INSTALL_PROMPT_DISMISSED_KEY, 'true');
+    setShowPrompt(false);
   };
 
   return (
@@ -63,7 +77,7 @@ export const InstallPrompt = () => {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => setShowPrompt(false)}
+              onClick={handleDismiss}
               className="text-white hover:bg-white/20"
             >
               <X className="w-4 h-4" />
