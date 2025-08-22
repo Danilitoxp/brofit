@@ -17,7 +17,6 @@ import Friends from "./pages/Friends";
 import Profile from "./pages/Profile";
 import Exercises from "./pages/Exercises";
 import Auth from "./pages/Auth";
-import ForgotPassword from "./pages/ForgotPassword";
 import EmailConfirmation from "./pages/EmailConfirmation";
 import NotFound from "./pages/NotFound";
 import { FriendProfile } from "./pages/FriendProfile";
@@ -31,10 +30,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/email-confirmation" element={<EmailConfirmation />} />
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/email-confirmation" element={<EmailConfirmation />} />
             <Route path="/start-workout" element={
               <ProtectedRoute>
                 <StartWorkout />
