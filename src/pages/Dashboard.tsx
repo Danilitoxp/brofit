@@ -55,7 +55,7 @@ const Dashboard = () => {
       month: 'long'
     });
   };
-  return <div className="min-h-screen bg-background px-4 pt-6">
+  return <div className="min-h-screen bg-background px-4 pt-6 py-0">
       {/* Header */}
       <div className="mb-8">
         
