@@ -58,23 +58,7 @@ const Dashboard = () => {
   return <div className="min-h-screen bg-background px-4 pt-6">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-3xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
-              {getWelcomeMessage()}, Bro!
-            </h1>
-            <p className="text-muted-foreground capitalize">
-              {getDayOfWeek()}, {formatDate()}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 floating-card p-3">
-              <Flame className="text-accent" size={20} />
-              <span className="font-bold text-lg">{stats?.current_streak || 0}</span>
-            </div>
-            
-          </div>
-        </div>
+        
       </div>
 
       {/* Today's Workout Card */}
