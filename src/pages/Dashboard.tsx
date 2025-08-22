@@ -62,7 +62,7 @@ const Dashboard = () => {
       </div>
 
       {/* Today's Workout Card */}
-      <div className="floating-card mb-6 bg-gradient-primary p-6 py-[20px]">
+      <div className="floating-card mb-6 bg-gradient-primary p-6 py-[19px]">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-xl font-bold text-primary-foreground">
