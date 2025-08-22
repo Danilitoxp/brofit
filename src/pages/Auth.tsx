@@ -275,6 +275,20 @@ const Auth = () => {
             </div>
           )}
 
+          {/* Forgot Password Link (only for login) */}
+          {isLogin && (
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="link"
+                className="p-0 h-auto text-sm text-muted-foreground hover:text-primary"
+                onClick={() => navigate('/forgot-password')}
+              >
+                Esqueceu sua senha?
+              </Button>
+            </div>
+          )}
+
           {/* Submit Button */}
           <Button type="submit" className="w-full h-12" disabled={isSubmitting}>
             {isSubmitting ? (
