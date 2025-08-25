@@ -156,21 +156,14 @@ input, textarea, select {
                       radial-gradient(circle at 75% 75%, hsl(var(--primary) / 0.02) 0%, transparent 50%);
   }
 
-  /* Scrollbar styling */
+  /* Hide scrollbar completely */
   ::-webkit-scrollbar {
-    width: 6px;
+    display: none;
   }
 
-  ::-webkit-scrollbar-track {
-    @apply bg-card;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-primary/20 rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/40;
+  /* Firefox */
+  * {
+    scrollbar-width: none;
   }
 }
 
