@@ -155,9 +155,7 @@ const Ranking = () => {
               <Trophy className="mr-3 text-primary" size={32} />
               Rankings
             </h1>
-            <p className="text-muted-foreground">
-              Compare seu progresso com outros atletas
-            </p>
+            
           </div>
         </div>
 
