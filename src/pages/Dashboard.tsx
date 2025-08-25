@@ -58,10 +58,10 @@ const Dashboard = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12">
               <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} />
-              <AvatarFallback className="text-lg font-bold">
+              <AvatarFallback className="text-sm font-bold">
                 {(profile?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'U')
                   .split(' ')
                   .map(n => n[0])
@@ -72,10 +72,10 @@ const Dashboard = () => {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">
+              <h1 className="text-lg font-display font-bold text-foreground">
                 {profile?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 @{profile?.nickname || user?.user_metadata?.nickname || 'usuario'}
               </p>
             </div>
