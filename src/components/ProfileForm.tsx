@@ -111,37 +111,19 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Upload de Avatar */}
         <div className="flex flex-col items-center space-y-4">
-          <Avatar className="w-24 h-24">
-            <AvatarImage src={formData.avatar_url} />
-            <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
-              {getInitials(formData.display_name)}
-            </AvatarFallback>
-          </Avatar>
-          
           <div className="flex flex-col items-center gap-2">
             <Label htmlFor="avatar-upload" className="cursor-pointer">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="relative overflow-hidden"
-                disabled={isUploadingAvatar}
-                asChild
-              >
-                <span>
-                  {isUploadingAvatar ? (
-                    <>
-                      <Upload className="w-4 h-4 mr-2 animate-spin" />
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-4 h-4 mr-2" />
-                      Alterar foto
-                    </>
-                  )}
-                </span>
-              </Button>
+              <div className="relative group">
+                <Avatar className="w-24 h-24 cursor-pointer hover:opacity-80 transition-opacity">
+                  <AvatarImage src={formData.avatar_url} />
+                  <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
+                    {getInitials(formData.display_name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-6 h-6 text-white" />
+                </div>
+              </div>
             </Label>
             <Input
               id="avatar-upload"
@@ -151,6 +133,9 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
               onChange={handleAvatarUpload}
               disabled={isUploadingAvatar}
             />
+            <p className="text-xs text-muted-foreground text-center">
+              {isUploadingAvatar ? "Enviando..." : "Clique na foto para alterar"}
+            </p>
             <p className="text-xs text-muted-foreground text-center">
               JPG, PNG ou GIF até 5MB
             </p>
@@ -202,37 +187,48 @@ export const ProfileForm = ({ profile, onSubmit, onCancel, onAvatarUpload, isLoa
 
         {/* Data de nascimento */}
         <div className="space-y-2">
-          <Label>Data de nascimento</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !birthDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {birthDate ? (
-                  format(birthDate, "dd 'de' MMMM 'de' yyyy", { locale: pt })
-                ) : (
-                  <span>Selecione uma data</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={birthDate}
-                onSelect={handleDateSelect}
-                disabled={(date) =>
-                  date > new Date() || date < new Date("1900-01-01")
-                }
-                initialFocus
-                className="p-3 pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+          <Label htmlFor="birth_date">Data de nascimento</Label>
+          <div className="flex gap-2">
+            <Input
+              id="birth_date"
+              type="date"
+              value={formData.birth_date || ""}
+              onChange={(e) => {
+                const dateValue = e.target.value;
+                handleInputChange('birth_date', dateValue);
+                setBirthDate(dateValue ? new Date(dateValue) : undefined);
+              }}
+              max={format(new Date(), 'yyyy-MM-dd')}
+              min="1900-01-01"
+              className="flex-1"
+            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  type="button"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={birthDate}
+                  onSelect={handleDateSelect}
+                  disabled={(date) =>
+                    date > new Date() || date < new Date("1900-01-01")
+                  }
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Digite no formato DD/MM/AAAA ou use o calendário
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

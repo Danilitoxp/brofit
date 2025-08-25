@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Edit, Settings, Trophy, Target, Calendar, Scale, Ruler, User, Lock, Eye, EyeOff, Copy, Share2, QrCode } from "lucide-react";
+import { Edit, Settings, Trophy, Target, Calendar, Scale, Ruler, User, Lock, Eye, EyeOff, Copy, Share2, QrCode, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 const Profile = () => {
-  const {
-    user
-  } = useAuth();
+  const { user, signOut } = useAuth();
   const {
     profile,
     stats,
@@ -87,13 +85,13 @@ const Profile = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Meu Perfil</h1>
+            <h1 className="text-3xl font-bold mb-2">Configurações</h1>
             <p className="text-muted-foreground">
               Gerencie suas informações pessoais e configurações
             </p>
           </div>
-          <Button onClick={() => setIsEditing(true)} className="hover-scale text-base text-center">
-            <Edit size={20} className="mr-2" />
+          <Button onClick={() => setIsEditing(true)} size="icon" className="hover-scale">
+            <Edit size={20} />
           </Button>
         </div>
 
@@ -104,7 +102,7 @@ const Profile = () => {
             <Card className="floating-card p-6">
               <div className="flex flex-col items-center gap-6 text-center">
 
-                <Avatar className="w-24 h-24">
+                <Avatar className="w-24 h-24 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsEditing(true)}>
                   <AvatarImage src={profile?.avatar_url} />
                   <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
                     {getInitials(profile?.display_name)}
@@ -319,6 +317,15 @@ const Profile = () => {
                 <Button variant="outline" className="w-full justify-start">
                   <User size={16} className="mr-2" />
                   Conta
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => signOut()}
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Sair
                 </Button>
               </div>
             </Card>
