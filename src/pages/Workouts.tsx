@@ -142,9 +142,7 @@ const Workouts = () => {
                           <Clock size={14} />
                           {workout.exercises.length} exercícios
                         </span>
-                        <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                          ~{workout.exercises.length * 12}min
-                        </span>
+                        
                       </div>
                     </div>
 
