@@ -4,17 +4,16 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AchievementsWidget } from "@/components/AchievementsWidget";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { ProgressCharts } from "@/components/ProgressCharts";
 const Dashboard = () => {
   const navigate = useNavigate();
-  const {
-    workouts
-  } = useWorkouts();
-  const {
-    stats
-  } = useProfile();
+  const { user } = useAuth();
+  const { workouts } = useWorkouts();
+  const { profile, stats } = useProfile();
   const [currentDate] = useState(new Date());
 
   // Determinar treino de hoje baseado no dia da semana
@@ -59,13 +58,27 @@ const Dashboard = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-3xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
-              {getWelcomeMessage()}, Bro!
-            </h1>
-            <p className="text-muted-foreground capitalize">
-              {getDayOfWeek()}, {formatDate()}
-            </p>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} />
+              <AvatarFallback className="text-lg font-bold">
+                {(profile?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'U')
+                  .split(' ')
+                  .map(n => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)
+                }
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl font-display font-bold text-foreground">
+                {profile?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
+              </h1>
+              <p className="text-muted-foreground">
+                @{profile?.nickname || user?.user_metadata?.nickname || 'usuario'}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2 floating-card p-3">
