@@ -66,9 +66,10 @@ const Workouts = () => {
       });
       setExerciseMap(map);
     });
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, []);
-
   if (loading) {
     return <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
@@ -103,9 +104,7 @@ const Workouts = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">Meus Treinos</h1>
-            <p className="text-muted-foreground">
-              Gerencie sua rotina de treinos semanal
-            </p>
+            
           </div>
           <Button onClick={() => setShowForm(true)} className="hover-scale w-full sm:w-auto">
             <Plus size={20} className="mr-2" />
@@ -195,12 +194,7 @@ const Workouts = () => {
                       <div className="grid gap-2 max-h-48 overflow-y-auto">
                         {workout.exercises.slice(0, 5).map((exercise, index) => <div key={index} className="flex justify-between items-center p-2 bg-muted/30 rounded-lg text-sm">
                             <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <img
-                                src={exerciseMap[exercise.exercise_name] || '/placeholder.svg'}
-                                alt={`Imagem do exercício ${exercise.exercise_name}`}
-                                className="w-10 h-10 rounded-md object-cover bg-muted shrink-0"
-                                loading="lazy"
-                              />
+                              <img src={exerciseMap[exercise.exercise_name] || '/placeholder.svg'} alt={`Imagem do exercício ${exercise.exercise_name}`} className="w-10 h-10 rounded-md object-cover bg-muted shrink-0" loading="lazy" />
                               <div className="w-2 h-2 rounded-full bg-primary shrink-0"></div>
                               <span className="font-medium truncate">{exercise.exercise_name}</span>
                             </div>
