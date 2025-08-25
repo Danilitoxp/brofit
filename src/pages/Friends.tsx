@@ -35,7 +35,10 @@ const Friends = () => {
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const friendIds = friends.map(f => f.user_id);
-  const { isOnline, lastSeen } = usePresence(friendIds);
+  const {
+    isOnline,
+    lastSeen
+  } = usePresence(friendIds);
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.length >= 2) {
@@ -62,7 +65,6 @@ const Friends = () => {
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h atrás`;
     return `${Math.floor(diffInMinutes / 1440)}d atrás`;
   };
-
   const formatLastSeen = (lastSeenAt: string): string => {
     const now = new Date();
     const lastSeen = new Date(lastSeenAt);
@@ -70,7 +72,6 @@ const Friends = () => {
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
     if (diffMinutes < 5) return "Online";
     if (diffMinutes < 60) return `Offline há ${diffMinutes} minutos`;
     if (diffHours < 24) return `Offline há ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
@@ -95,11 +96,7 @@ const Friends = () => {
               <h3 className="font-semibold">{friend.display_name}</h3>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  {isOnline(friend.user_id)
-                    ? 'Online'
-                    : (lastSeen[friend.user_id]
-                        ? formatLastSeen(lastSeen[friend.user_id] as string)
-                        : 'Offline')}
+                  {isOnline(friend.user_id) ? 'Online' : lastSeen[friend.user_id] ? formatLastSeen(lastSeen[friend.user_id] as string) : 'Offline'}
                 </span>
               </div>
               {friend.bio && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{friend.bio}</p>}
@@ -218,9 +215,7 @@ const Friends = () => {
               <Users className="mr-2 md:mr-3 text-primary" size={28} />
               Amigos
             </h1>
-            <p className="text-muted-foreground">
-              Conecte-se com outros atletas e acompanhe seu progresso
-            </p>
+            
           </div>
         </div>
 
