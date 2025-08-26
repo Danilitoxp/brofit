@@ -6,8 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { BirthDatePicker } from "@/components/BirthDatePicker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarIcon, X, Camera, Upload } from "lucide-react";
 import { format } from "date-fns";
@@ -158,30 +157,11 @@ export const ProfileForm = ({
         {/* Data de nascimento */}
         <div className="space-y-2">
           <Label>Data de nascimento</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !birthDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {birthDate ? format(birthDate, "dd/MM/yyyy", { locale: pt }) : "Selecione a data"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar 
-                mode="single" 
-                selected={birthDate} 
-                onSelect={handleDateSelect} 
-                disabled={date => date > new Date() || date < new Date("1900-01-01")} 
-                initialFocus 
-                className="p-3 pointer-events-auto" 
-              />
-            </PopoverContent>
-          </Popover>
+          <BirthDatePicker 
+            date={birthDate}
+            onSelect={handleDateSelect}
+            placeholder="Selecione a data"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
