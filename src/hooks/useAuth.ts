@@ -34,6 +34,24 @@ export const useAuthState = () => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Update user presence when they sign in (for streak calculation)
+        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          setTimeout(async () => {
+            try {
+              await supabase
+                .from('user_presence')
+                .upsert({ 
+                  user_id: session.user.id, 
+                  last_seen_at: new Date().toISOString() 
+                }, {
+                  onConflict: 'user_id'
+                });
+            } catch (error) {
+              console.error('Error updating presence:', error);
+            }
+          }, 0);
+        }
       }
     );
 
@@ -42,6 +60,24 @@ export const useAuthState = () => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Update presence for existing session
+      if (session?.user) {
+        setTimeout(async () => {
+          try {
+            await supabase
+              .from('user_presence')
+              .upsert({ 
+                user_id: session.user.id, 
+                last_seen_at: new Date().toISOString() 
+              }, {
+                onConflict: 'user_id'
+              });
+          } catch (error) {
+            console.error('Error updating presence:', error);
+          }
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();

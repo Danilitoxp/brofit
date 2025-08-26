@@ -526,6 +526,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_presence_streak: {
+        Args: { p_user_id: string }
+        Returns: {
+          current_streak: number
+          longest_streak: number
+        }[]
+      }
       check_and_grant_achievements: {
         Args: { p_user_id: string }
         Returns: undefined
