@@ -46,6 +46,8 @@ const Friends = () => {
       try {
         const results = await searchUsers(query);
         setSearchResults(results);
+      } catch (error) {
+        setSearchResults([]);
       } finally {
         setIsSearching(false);
       }
@@ -233,10 +235,20 @@ const Friends = () => {
                 </div>
               </div>}
 
-            {searchResults.length > 0 && <div className="space-y-3">
-                <h3 className="font-semibold">Resultados da busca</h3>
-                {searchResults.map(user => <SearchResultCard key={user.user_id} user={user} />)}
-              </div>}
+            {searchResults.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-semibold">Resultados da busca ({searchResults.length})</h3>
+                {searchResults.map(user => (
+                  <SearchResultCard key={user.user_id} user={user} />
+                ))}
+              </div>
+            )}
+
+            {searchQuery.length >= 2 && !isSearching && searchResults.length === 0 && (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">Nenhum usuário encontrado para "{searchQuery}"</p>
+              </div>
+            )}
           </div>
         </Card>
 

@@ -159,9 +159,27 @@ export const ProfileForm = ({
         <div className="space-y-2">
           <Label>Data de nascimento</Label>
           <Popover>
-            
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !birthDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {birthDate ? format(birthDate, "dd/MM/yyyy", { locale: pt }) : "Selecione a data"}
+              </Button>
+            </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={birthDate} onSelect={handleDateSelect} disabled={date => date > new Date() || date < new Date("1900-01-01")} initialFocus className="p-3 pointer-events-auto" />
+              <Calendar 
+                mode="single" 
+                selected={birthDate} 
+                onSelect={handleDateSelect} 
+                disabled={date => date > new Date() || date < new Date("1900-01-01")} 
+                initialFocus 
+                className="p-3 pointer-events-auto" 
+              />
             </PopoverContent>
           </Popover>
         </div>
