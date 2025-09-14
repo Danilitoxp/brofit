@@ -114,7 +114,7 @@ export const WorkoutForm = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || exercises.length === 0) return;
 
     const workoutData: Workout = {
       name: name.trim(),
@@ -323,7 +323,7 @@ export const WorkoutForm = ({
         )}
 
         <div className="flex gap-4">
-          <Button type="submit" disabled={isLoading || !name.trim()}>
+          <Button type="submit" disabled={isLoading || !name.trim() || exercises.length === 0}>
             {workout ? "Atualizar Treino" : "Criar Treino"}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel}>

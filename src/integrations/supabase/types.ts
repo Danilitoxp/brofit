@@ -411,39 +411,6 @@ export type Database = {
           },
         ]
       }
-      workout_schedules: {
-        Row: {
-          created_at: string
-          current_week: number
-          day_of_week: number
-          id: string
-          is_rest: boolean
-          updated_at: string
-          user_id: string
-          workout_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          current_week?: number
-          day_of_week: number
-          id?: string
-          is_rest?: boolean
-          updated_at?: string
-          user_id: string
-          workout_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          current_week?: number
-          day_of_week?: number
-          id?: string
-          is_rest?: boolean
-          updated_at?: string
-          user_id?: string
-          workout_id?: string | null
-        }
-        Relationships: []
-      }
       workout_sets: {
         Row: {
           completed: boolean | null
