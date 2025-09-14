@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Calendar, RotateCcw, Play, Plus } from "lucide-react";
+import { Calendar, RotateCcw, Play } from "lucide-react";
 import { Workout } from "@/hooks/useWorkouts";
+import { useWorkoutSchedule, ScheduleItem } from "@/hooks/useWorkoutSchedule";
 
 interface WorkoutSchedulerProps {
   workouts: Workout[];
@@ -17,33 +17,17 @@ const DAYS_OF_WEEK = [
   "Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"
 ];
 
-interface ScheduleItem {
-  day: number;
-  workoutId: string | null;
-  isRest: boolean;
-}
-
 export const WorkoutScheduler = ({ workouts, onStartWorkout }: WorkoutSchedulerProps) => {
-  const [weeklySchedule, setWeeklySchedule] = useState<ScheduleItem[]>([
-    { day: 0, workoutId: null, isRest: true }, // Domingo
-    { day: 1, workoutId: null, isRest: false }, // Segunda
-    { day: 2, workoutId: null, isRest: false }, // Terça
-    { day: 3, workoutId: null, isRest: false }, // Quarta
-    { day: 4, workoutId: null, isRest: true }, // Quinta
-    { day: 5, workoutId: null, isRest: false }, // Sexta
-    { day: 6, workoutId: null, isRest: false }, // Sábado
-  ]);
-  
-  const [currentWeek, setCurrentWeek] = useState(0);
+  const { 
+    schedule: weeklySchedule, 
+    currentWeek, 
+    loading, 
+    saveScheduleItem, 
+    updateWeek 
+  } = useWorkoutSchedule();
 
   const updateScheduleItem = (dayIndex: number, workoutId: string | null, isRest: boolean) => {
-    setWeeklySchedule(prev => 
-      prev.map((item, index) => 
-        index === dayIndex 
-          ? { ...item, workoutId: isRest ? null : workoutId, isRest }
-          : item
-      )
-    );
+    saveScheduleItem(dayIndex, workoutId, isRest);
   };
 
   const getTodayWorkout = () => {
@@ -98,6 +82,17 @@ export const WorkoutScheduler = ({ workouts, onStartWorkout }: WorkoutSchedulerP
     return null;
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-32 bg-muted rounded-lg mb-6"></div>
+          <div className="h-64 bg-muted rounded-lg"></div>
+        </div>
+      </div>
+    );
+  }
+
   const todayWorkout = getTodayWorkout();
   const today = new Date().getDay();
 
@@ -148,7 +143,7 @@ export const WorkoutScheduler = ({ workouts, onStartWorkout }: WorkoutSchedulerP
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentWeek(prev => prev + 1)}
+            onClick={() => updateWeek(currentWeek + 1)}
           >
             <RotateCcw className="w-4 h-4 mr-2" />
             Próxima Semana
